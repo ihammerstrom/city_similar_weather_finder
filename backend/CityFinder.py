@@ -103,6 +103,10 @@ class CityFinder:
         return [cdf.labels["NAME"] for cdf in self.city_dfs]
 
 
+    def get_city_names_with_substring(self, query):
+        return [city_df.labels["NAME"] for city_df in self.city_dfs if query.lower() in city_df.labels["NAME"].lower()]
+
+
 if __name__ == '__main__':
     my_city_finder = CityFinder(files_dir)
 

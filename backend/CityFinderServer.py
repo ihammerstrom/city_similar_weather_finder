@@ -1,7 +1,9 @@
-from flask import Flask, current_app, request
+from flask import Flask, current_app, request, jsonify
 from CityFinder import CityFinder
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 
 @app.route('/')
@@ -13,11 +15,10 @@ def hello():
 def query_example(methods=['GET']):
     # Get the 'name' query parameter from the request
     name = request.args.get('city_name')
+    assert(name != None)
 
-    print("ok")
     if name:
         city_finder = current_app.config.get('city_finder')
-        print("ok2")
         return city_finder.get_similar_cities(name, 3)
     else:
         return 'Hello, what\'s your name?'
@@ -31,11 +32,15 @@ def get_city_list():
 
 @app.route('/autocomplete_city_name', methods=['GET'])
 def autocomplete_city_name():
+    print('here')
     city_name_substring = request.args.get('city_name_substring')
     assert(city_name_substring != None)
 
-    return current_app.config.get('city_finder').get_city_names_with_substring(city_name_substring)
-
+    return jsonify({
+        "suggestions":
+            current_app.config.get('city_finder')
+                    .get_city_names_with_substring(city_name_substring)
+        })
 
 
 if __name__ == '__main__':

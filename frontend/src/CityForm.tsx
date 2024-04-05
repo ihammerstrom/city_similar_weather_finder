@@ -1,71 +1,71 @@
 import React, { useState } from 'react';
 import { Form, Button, Container } from 'react-bootstrap';
 import { API_URL } from './config';
-import { AutocompleteSelect } from './AutocompleteSelect';
 import { IOption } from './OptionType';
+import AsyncSelect from 'react-select/async';
+import { ActionMeta, SingleValue } from 'react-select';
 
-interface City {
-  name: string;
-  // Add more properties as needed
+interface IProps {
+  // loadOptions: (inputValue: string) => Promise<IOption[]>;
+  handleChange: (newValue: SingleValue<IOption>, actionMeta: ActionMeta<IOption>) => void;
 }
 
-const AutocompleteForm: React.FC = () => {
-  const [city, setCity] = useState<string>('');
-  const [suggestions, setSuggestions] = useState<String[]>([]);
+const AutocompleteForm: React.FC<IProps> = ( { handleChange } ) => {
 
-  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputCity = e.target.value;
-    setCity(inputCity);
-    // console.log("made change")
-    // Make API call to autocomplete API
-    try {
-      const response = await fetch(`${API_URL}/autocomplete_city_name?city_name_substring=${inputCity}`);
-      const data = await response.json();
-      console.log(data.suggestions)
-      setSuggestions(data.suggestions); // Assuming results are an array of city suggestions
-      // console.log("suggestions")
-      // console.log(suggestions)
-    } catch (error) {
-      console.error('Error fetching autocomplete suggestions:', error);
-    }
-  };
+  // const [suggestions, setSuggestions] = useState<String[]>([]);
 
   
   const fetchOptions = async (inputCity: string): Promise<IOption[]> => {
-    const response = await fetch(`${API_URL}/autocomplete_city_name?city_name_substring=${inputCity}`);
-    const data = await response.json();
-    return data.suggestions.map((item: any) => ({
-      label: item, // Adjust based on your API response
-      value: item,   // Adjust based on your API response
-    }));
-  };
-  
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    // Make API call to send selected city
     try {
-      const response = await fetch('https://yourapi.com/sendCity', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ city }),
-      });
-      const data = await response.json();
-      console.log('Response from sending city:', data);
-      // Reset the form after successful submission
-      setCity('');
-      setSuggestions([]);
+      if (inputCity.length > 0 && inputCity.charAt(0).match(/[a-z]/i)){
+        const response = await fetch(`${API_URL}/autocomplete_city_name?city_name_substring=${inputCity}`);
+        const data = await response.json();
+        return data.suggestions.map((item: any) => ({
+          label: item, // Adjust based on your API response
+          value: item,   // Adjust based on your API response
+        }));
+      }
     } catch (error) {
-      console.error('Error sending city:', error);
+      console.error('Error fetching autocomplete suggestions:', error);
     }
+    return []
   };
+
+// Example function that will be called with the selected value
+
+
+
+  // const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   // Make API call to send selected city
+  //   try {
+  //     const response = await fetch('https://yourapi.com/sendCity', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({ city }),
+  //     });
+  //     const data = await response.json();
+  //     console.log('Response from sending city:', data);
+  //     // Reset the form after successful submission
+  //     setCity('');
+  //     setSuggestions([]);
+  //   } catch (error) {
+  //     console.error('Error sending city:', error);
+  //   }
+  // };
 
   return (
     <Container>
       <h1>Enter a City</h1>
-      <AutocompleteSelect loadOptions={fetchOptions} />;
+      <AsyncSelect
+        loadOptions={fetchOptions}
+        onChange={handleChange}
+      />
+      <Button variant="primary" type="submit">
+        Submit
+      </Button>
     </Container>
   );
 };
@@ -93,3 +93,6 @@ export default AutocompleteForm;
       //       <li key={index}>{city}</li>
       //     ))}
       //   </ul> */}
+
+
+      

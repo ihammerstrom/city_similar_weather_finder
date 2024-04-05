@@ -16,6 +16,17 @@ MINIMUM_SAME_MONTHS_SAMPLE_SIZE = 3
 # MAX_YEAR = datetime.datetime.now().year - 1 # up until last year to increase likelihood of only dealing with full years
 
 
+class CityData:
+    def __init__(self, name, similarity, df):
+        self.name = name
+        self.similarity = similarity
+        for key in KEY_VALUES_TO_AVG: # add the keys above, pulling the values from the dataframe
+            setattr(self, key, list(df[key]))
+
+    def __str__(self):
+        return ", ".join([self.name, str(self.similarity), str([str(getattr(self, key)) for key in KEY_VALUES_TO_AVG])])
+
+
 # check if list of columns exist
 def columns_exist(df, columns_to_check):
     return all(col in df.columns for col in columns_to_check)
@@ -74,27 +85,21 @@ class CityFinder:
 
         reference_city_df = None
         for cdf in self.city_dfs:
-            # print(cdf.labels['NAME'])
             if cdf.labels['NAME'] == reference_city_name:
                 reference_city_df = cdf
                 break
 
         if reference_city_df is not None:
-
-            similarities = []
+            similarities_city_data = []
+            
             for weather_df in self.city_dfs:
-
                 if weather_df.labels["NAME"] != reference_city_df.labels["NAME"]:
-
                     similarity_matrix = cosine_similarity(reference_city_df, weather_df.values)
                     avg_similarity = np.mean(similarity_matrix)
 
-                    similarities.append({
-                        'name':weather_df.labels["NAME"],
-                        'similarity':avg_similarity
-                        })
+                    similarities_city_data.append(CityData(weather_df.labels["NAME"], avg_similarity, weather_df))
 
-            return sorted(similarities, key=lambda city:city['similarity'])[-count:] #assume count is not higher than length
+            return sorted(similarities_city_data, key=lambda city:city.similarity)[-count:]
 
         else:
             raise Exception(f'couldn\'t find city {reference_city_name}')
@@ -110,7 +115,8 @@ class CityFinder:
 if __name__ == '__main__':
     my_city_finder = CityFinder(files_dir)
 
-    print(my_city_finder.get_similar_cities("BRIDGEPORT MUNICIPAL AIRPORT, TX US", 3))
+    for city in my_city_finder.get_similar_cities("BRIDGEPORT MUNICIPAL AIRPORT, TX US", 3):
+        print(city)
 
 
 

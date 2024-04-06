@@ -3,28 +3,12 @@ import numpy as np
 import os
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
-import datetime
+from Config import FILES_DIR, KEY_VALUES_TO_COPY, KEY_VALUES_TO_AVG, MONTHS_IN_YEAR, MIN_YEAR, MAX_YEAR, MINIMUM_SAME_MONTHS_SAMPLE_SIZE
+from CityData import CityData
+import shutil
 
-files_dir = "test_data/"
 
-KEY_VALUES_TO_COPY = ['NAME', 'LATITUDE', 'LONGITUDE']
-KEY_VALUES_TO_AVG = ['TAVG', 'TMAX', 'TMIN', 'PRCP', 'SNOW']
-MONTHS_IN_YEAR = 12
-MIN_YEAR = 2008
-MAX_YEAR = 2023
-MINIMUM_SAME_MONTHS_SAMPLE_SIZE = 3
 # MAX_YEAR = datetime.datetime.now().year - 1 # up until last year to increase likelihood of only dealing with full years
-
-
-class CityData:
-    def __init__(self, name, similarity, df):
-        self.name = name
-        self.similarity = similarity
-        for key in KEY_VALUES_TO_AVG: # add the keys above, pulling the values from the dataframe
-            setattr(self, key, list(df[key]))
-
-    def __str__(self):
-        return ", ".join([self.name, str(self.similarity), str([str(getattr(self, key)) for key in KEY_VALUES_TO_AVG])])
 
 
 # check if list of columns exist
@@ -42,19 +26,34 @@ def has_sufficient_values(cdf, key_values_to_avg, min_values):
 
 
 class CityFinder:
-    def __init__(self, directory):
-        self.city_dfs = self.get_valid_weather_dataframes(files_dir)
+    def __init__(self):
+        self.city_dfs = self.get_valid_weather_dataframes()
 
-    def get_valid_weather_dataframes(self, directory):
+    def get_valid_weather_dataframes(self):
         city_dfs = []
+        source_dir = FILES_DIR
 
+        processed_dir = f'accepted_files_from_{source_dir}'
+        copying_files = False
+
+        # we are going to be copying useful files over to avoide reprocessing
+        if not os.path.exists(processed_dir):
+            os.makedirs(processed_dir)
+            copying_files = True
+
+        if not copying_files:
+            source_dir = processed_dir
+        # else, continue in original source_dir for this run
+    
+        files_quantity = len(os.listdir(source_dir))
+        i = 0
         #for file in directory
-        for file in os.listdir(directory):
+        for file in os.listdir(source_dir):
 
             #if it's fits the naming scheme of files we want
             if file.endswith('.csv') and file.startswith('US'):
 
-                cdf = pd.read_csv(os.path.join(directory, file))
+                cdf = pd.read_csv(os.path.join(source_dir, file))
 
                 # if has correct columns
                 if columns_exist(cdf, KEY_VALUES_TO_AVG):
@@ -66,6 +65,9 @@ class CityFinder:
                     # if there are values after trimming the years
                     if not cdf.empty and has_sufficient_values(cdf, KEY_VALUES_TO_AVG, MINIMUM_SAME_MONTHS_SAMPLE_SIZE):
 
+                        if copying_files:
+                            shutil.copy(source_dir + file, processed_dir)
+                        
                         monthly_avgs_df = cdf.groupby(cdf['DATE'].dt.month)[KEY_VALUES_TO_AVG].mean()
 
                         labels = {}
@@ -76,13 +78,15 @@ class CityFinder:
                         monthly_avgs_df.labels = labels
 
                         city_dfs.append(monthly_avgs_df)
-
+            i += 1
+            print(f'processed {file} {i}/{files_quantity}')
+        
+        print(f'kept {len(city_dfs)}/{files_quantity}')
         return city_dfs
 
 
 
     def get_similar_cities(self, reference_city_name, count):
-
         reference_city_df = None
         for cdf in self.city_dfs:
             if cdf.labels['NAME'] == reference_city_name:
@@ -93,16 +97,17 @@ class CityFinder:
             similarities_city_data = []
             
             for weather_df in self.city_dfs:
-                if weather_df.labels["NAME"] != reference_city_df.labels["NAME"]:
-                    similarity_matrix = cosine_similarity(reference_city_df, weather_df.values)
-                    avg_similarity = np.mean(similarity_matrix)
+                # if weather_df.labels["NAME"] != reference_city_df.labels["NAME"]:
+                similarity_matrix = cosine_similarity(reference_city_df, weather_df.values)
+                avg_similarity = np.mean(similarity_matrix)
 
-                    similarities_city_data.append(CityData(weather_df.labels["NAME"], avg_similarity, weather_df))
+                similarities_city_data.append(CityData(weather_df.labels["NAME"], avg_similarity, weather_df.labels["LATITUDE"], weather_df.labels["LONGITUDE"], weather_df))
 
             return sorted(similarities_city_data, key=lambda city:city.similarity)[-count:]
 
         else:
             raise Exception(f'couldn\'t find city {reference_city_name}')
+
 
     def get_city_list(self):
         return [cdf.labels["NAME"] for cdf in self.city_dfs]
@@ -113,7 +118,7 @@ class CityFinder:
 
 
 if __name__ == '__main__':
-    my_city_finder = CityFinder(files_dir)
+    my_city_finder = CityFinder()
 
     for city in my_city_finder.get_similar_cities("BRIDGEPORT MUNICIPAL AIRPORT, TX US", 3):
         print(city)

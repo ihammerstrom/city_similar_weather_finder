@@ -43,7 +43,7 @@ function App() {
     <>
       <CityForm handleChange={handleCityChange} handleSubmit={fetchCityData}/>
         <h2>
-          Top 10 Similar Cities to "{cityName}":
+          Top {similarCities.length} Similar Cities to "{cityName}":
         </h2>
         {similarCities.map((cityData) => (
           <CityWeatherGraph data={cityData} />

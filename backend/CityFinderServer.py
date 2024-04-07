@@ -20,7 +20,7 @@ def get_similar_cities(methods=['GET']):
     if name:
         city_finder = current_app.config.get('city_finder')
         return jsonify({
-            'cities': [city.to_dict() for city in city_finder.get_similar_cities(name, 10)]
+            'cities': [city.to_dict() for city in city_finder.get_similar_cities(name, 20)]
         })
     else:
         return 'Hello, what\'s your name?'
@@ -34,7 +34,6 @@ def get_city_list():
 
 @app.route('/autocomplete_city_name', methods=['GET'])
 def autocomplete_city_name():
-    print('here')
     city_name_substring = request.args.get('city_name_substring')
     assert(city_name_substring != None)
 

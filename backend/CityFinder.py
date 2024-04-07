@@ -36,14 +36,12 @@ class CityFinder:
         processed_dir = f'accepted_files_from_{source_dir}'
         copying_files = False
 
-        # we are going to be copying useful files over to avoide reprocessing
+        # we are also going to be copying useful files over to avoid reprocessing
         if not os.path.exists(processed_dir):
             os.makedirs(processed_dir)
             copying_files = True
-
-        if not copying_files:
+        else: # if copied dir already exists, use that
             source_dir = processed_dir
-        # else, continue in original source_dir for this run
     
         files_quantity = len(os.listdir(source_dir))
         i = 0
@@ -64,10 +62,11 @@ class CityFinder:
 
                     # if there are values after trimming the years
                     if not cdf.empty and has_sufficient_values(cdf, KEY_VALUES_TO_AVG, MINIMUM_SAME_MONTHS_SAMPLE_SIZE):
+                        if copying_files: # this file is good, copy for later
+                            source_file = source_dir + file
+                            print(f'copying from {source_file} to {processed_dir}')
+                            shutil.copy(source_file, processed_dir)
 
-                        if copying_files:
-                            shutil.copy(source_dir + file, processed_dir)
-                        
                         monthly_avgs_df = cdf.groupby(cdf['DATE'].dt.month)[KEY_VALUES_TO_AVG].mean()
 
                         labels = {}
@@ -95,11 +94,13 @@ class CityFinder:
 
         if reference_city_df is not None:
             similarities_city_data = []
-            
             for weather_df in self.city_dfs:
-                # if weather_df.labels["NAME"] != reference_city_df.labels["NAME"]:
-                similarity_matrix = cosine_similarity(reference_city_df, weather_df.values)
+                similarity_matrix = cosine_similarity(reference_city_df[['TAVG', 'PRCP']], weather_df[['TAVG', 'PRCP']])
                 avg_similarity = np.mean(similarity_matrix)
+                if weather_df.labels["NAME"] == reference_city_df.labels["NAME"]:
+                    print(f'{weather_df.labels["NAME"]} to itself, found similarity of {avg_similarity}')
+                else:
+                    print(f'{weather_df.labels["NAME"]} to {reference_city_df.labels["NAME"]}, found similarity of {avg_similarity}')
 
                 similarities_city_data.append(CityData(weather_df.labels["NAME"], avg_similarity, weather_df.labels["LATITUDE"], weather_df.labels["LONGITUDE"], weather_df))
 

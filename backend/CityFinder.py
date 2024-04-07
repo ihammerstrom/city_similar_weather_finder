@@ -25,6 +25,22 @@ def has_sufficient_values(cdf, key_values_to_avg, min_values):
     return cdf.groupby(cdf['DATE'].dt.month)[key_values_to_avg].count().min().min() > min_values
 
 
+def get_similarity_metric(df1, df2):
+
+    # Vectorization and preparation for similarity calculation
+    city_vectors1 = [df1.values.flatten() for df in df1]  # Flatten each DataFrame into a single vector
+    city_vectors2 = [df2.values.flatten() for df in df2]
+
+    # Convert list of vectors into a 2D numpy array
+    matrix1 = np.array(city_vectors1)
+    matrix2 = np.array(city_vectors2)
+
+    # Calculate cosine similarity matrix
+    similarity_matrix = cosine_similarity(matrix1, matrix2)
+
+    return np.mean(similarity_matrix)
+
+
 class CityFinder:
     def __init__(self):
         self.city_dfs = self.get_valid_weather_dataframes()
@@ -84,7 +100,6 @@ class CityFinder:
         return city_dfs
 
 
-
     def get_similar_cities(self, reference_city_name, count):
         reference_city_df = None
         for cdf in self.city_dfs:
@@ -95,10 +110,14 @@ class CityFinder:
         if reference_city_df is not None:
             similarities_city_data = []
             for weather_df in self.city_dfs:
-                similarity_matrix = cosine_similarity(reference_city_df[['TAVG', 'PRCP']], weather_df[['TAVG', 'PRCP']])
-                avg_similarity = np.mean(similarity_matrix)
+
+                # similarity_matrix = cosine_similarity(np.array(reference_city_df[['TAVG', 'PRCP']].values.flatten()).reshape(-1, 1), np.array(weather_df[['TAVG', 'PRCP']].values.flatten()).reshape(-1, 1))
+                avg_similarity = get_similarity_metric(reference_city_df[['TAVG', 'PRCP']], weather_df[['TAVG', 'PRCP']])
                 if weather_df.labels["NAME"] == reference_city_df.labels["NAME"]:
                     print(f'{weather_df.labels["NAME"]} to itself, found similarity of {avg_similarity}')
+                    # print(similarity_matrix)
+                    print(reference_city_df[['TAVG', 'PRCP']])
+                    print(weather_df[['TAVG', 'PRCP']])
                 else:
                     print(f'{weather_df.labels["NAME"]} to {reference_city_df.labels["NAME"]}, found similarity of {avg_similarity}')
 

@@ -45,8 +45,12 @@ function App() {
         <h2>
           Top {similarCities.length} Similar Cities to "{cityName}":
         </h2>
-        {similarCities.map((cityData) => (
-          <CityWeatherGraph data={cityData} />
+        {similarCities
+          .slice() // Create a copy to avoid mutating the original array
+          .sort((a, b) => b.similarity - a.similarity) // For numeric values
+          // .sort((a, b) => a.attributeName.localeCompare(b.attributeName)) // For strings
+          .map((cityData) => (
+            <CityWeatherGraph data={cityData} /> // Assuming each cityData has a unique 'id' attribute for React keys
         ))}
     </>
   );

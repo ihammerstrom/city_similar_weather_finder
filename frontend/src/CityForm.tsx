@@ -7,10 +7,10 @@ import { ActionMeta, SingleValue } from 'react-select';
 
 interface IProps {
   handleChange: (newValue: SingleValue<IOption>, actionMeta: ActionMeta<IOption>) => void;
-  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  // handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 
-const AutocompleteForm: React.FC<IProps> = ( { handleChange, handleSubmit } ) => {  
+const AutocompleteForm: React.FC<IProps> = ( { handleChange } ) => {  
   const fetchOptions = async (inputCitySubStr: string): Promise<IOption[]> => {
     try {
       if (inputCitySubStr.length > 1 && inputCitySubStr.charAt(0).match(/[a-z]/i)){
@@ -33,15 +33,12 @@ const AutocompleteForm: React.FC<IProps> = ( { handleChange, handleSubmit } ) =>
 
   return (
     <Container>
-      <h1>Enter a City</h1>
-      <form onSubmit={handleSubmit}>
+      <h1 style={{textAlign: 'center'}}>Find US cities with weather similar to...</h1>
+      <form>
       <AsyncSelect
         loadOptions={fetchOptions}
         onChange={handleChange}
       />
-      <Button variant="primary" type="submit">
-        Submit
-      </Button>
     </form>
     </Container>
   );

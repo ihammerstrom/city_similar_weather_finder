@@ -161,7 +161,7 @@ class CityFinder:
 
             for city in sorted_data:
                 if is_far_enough(city, sorted_data_of_sufficient_distance) or \
-                        city.labels["NAME"] == reference_city_df.labels["NAME"]:
+                        city.name == reference_city_df.labels["NAME"]:
                     sorted_data_of_sufficient_distance.append(city)
                 
                 if len(sorted_data_of_sufficient_distance) == count: # we have enough cities

@@ -9,6 +9,7 @@ import { CityWeatherData } from './CityWeatherData';
 import CityWeatherGraph from './CityWeatherGraph';
 import MapView from './MapView';
 import { map } from 'leaflet';
+import LoadingBlock from './LoadingBlock';
 
 // interface IProps {
 //   handleChange: (newValue: SingleValue<IOption>, actionMeta: ActionMeta<IOption>) => void;
@@ -20,17 +21,19 @@ function App() {
   const [cityName, setCityName] = useState<string | undefined>('');
   const [mapCityName, setMapCityName] = useState<string | undefined>('');
   const [similarCities, setSimilarCities] = useState<CityWeatherData[]>([]);
-  
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
 
   const fetchCityData = async (selectedCity: IOption | null) => {
     // Make API call to send selected city
     try {
       console.log(selectedCity?.value)
-      
       if (selectedCity != null){
+        setIsLoading(true)
         const cityName = selectedCity?.value
         const response = await fetch(`${API_URL}/get_similar_cities?city_name=${cityName}`);
         const data = await response.json();
+        setIsLoading(false)
         console.log(`Response from sending city ${cityName}:`, data);
         setSimilarCities(data['cities'].slice().sort((a: { similarity: number; }, b: { similarity: number; }) => b.similarity - a.similarity))
         setCityName(cityName)
@@ -49,12 +52,16 @@ function App() {
 
   return (
     <>
-      <CityForm handleChange={fetchCityData}/>
+      <div style={{ marginRight: '10%', marginLeft: '10%'}}> {/* Add some spacing between the components */}
+        <CityForm handleChange={fetchCityData}/>
+      </div>
+
+        <LoadingBlock isLoading={isLoading}/>
 
         {similarCities?.length > 0 &&
         <>
-          <h2>
-            Top {similarCities.length} Similar Cities to "{cityName}":
+          <h2 style={{textAlign: 'center'}}>
+            Top {similarCities.length} similar cities:
           </h2>
           <CityWeatherGraph data={similarCities.find(city => city.name === mapCityName)!} backgroundData={similarCities[0]}/>
           <MapView locations={similarCities} onCityClick={handleCityClick} />

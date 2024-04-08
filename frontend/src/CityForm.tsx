@@ -33,7 +33,7 @@ const AutocompleteForm: React.FC<IProps> = ( { handleChange } ) => {
 
   return (
     <Container>
-      <h1 style={{textAlign: 'center'}}>Find US cities with weather similar to...</h1>
+      <h1 style={{textAlign: 'center'}}>Find US cities with a climate similar to...</h1>
       <form>
       <AsyncSelect
         loadOptions={fetchOptions}

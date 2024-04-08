@@ -13,7 +13,7 @@ interface IProps {
 const AutocompleteForm: React.FC<IProps> = ( { handleChange, handleSubmit } ) => {  
   const fetchOptions = async (inputCitySubStr: string): Promise<IOption[]> => {
     try {
-      if (inputCitySubStr.length > 0 && inputCitySubStr.charAt(0).match(/[a-z]/i)){
+      if (inputCitySubStr.length > 1 && inputCitySubStr.charAt(0).match(/[a-z]/i)){
         const response = await fetch(`${API_URL}/autocomplete_city_name?city_name_substring=${inputCitySubStr}`);
         const data = await response.json();
         return data.suggestions.map((item: any) => ({

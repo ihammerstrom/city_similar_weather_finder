@@ -7,6 +7,7 @@ import { IOption } from './OptionType';
 import { API_URL } from './config';
 import { CityWeatherData } from './CityWeatherData';
 import CityWeatherGraph from './CityWeatherGraph';
+import MapView from './MapView';
 
 // interface IProps {
 //   handleChange: (newValue: SingleValue<IOption>, actionMeta: ActionMeta<IOption>) => void;
@@ -50,10 +51,19 @@ function App() {
           .sort((a, b) => b.similarity - a.similarity) // For numeric values
           // .sort((a, b) => a.attributeName.localeCompare(b.attributeName)) // For strings
           .map((cityData) => (
-            <CityWeatherGraph data={cityData} /> // Assuming each cityData has a unique 'id' attribute for React keys
+            <>
+            <CityWeatherGraph data={cityData} key={cityData.name} />
+            <MapView lat={cityData.latitude} lng={cityData.longitude} key={cityData.name + "1"} />
+            <HorizontalLine />
+            </>
         ))}
     </>
   );
 }
+
+
+const HorizontalLine = () => (
+  <div style={{ borderTop: "3px solid #000", margin: "30px 0" }}></div>
+);
 
 export default App;

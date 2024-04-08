@@ -6,9 +6,29 @@ from sklearn.metrics.pairwise import cosine_similarity
 from Config import FILES_DIR, KEY_VALUES_TO_COPY, KEY_VALUES_TO_AVG, MONTHS_IN_YEAR, MIN_YEAR, MAX_YEAR, MINIMUM_SAME_MONTHS_SAMPLE_SIZE
 from CityData import CityData
 import shutil
+import math
 
+def get_distance(lat1, lon1, lat2, lon2):
+    # Radius of the Earth in kilometers
+    R = 6371.0
+    
+    # Convert latitude and longitude from degrees to radians
+    lat1_rad = math.radians(lat1)
+    lon1_rad = math.radians(lon1)
+    lat2_rad = math.radians(lat2)
+    lon2_rad = math.radians(lon2)
+    
+    # Differences in coordinates
+    dlat = lat2_rad - lat1_rad
+    dlon = lon2_rad - lon1_rad
+    
+    # Haversine formula
+    a = math.sin(dlat / 2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon / 2)**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    distance = R * c
+    
+    return distance
 
-# MAX_YEAR = datetime.datetime.now().year - 1 # up until last year to increase likelihood of only dealing with full years
 
 
 # check if list of columns exist
@@ -36,7 +56,13 @@ def get_similarity_metric(df1, df2):
     matrix2 = np.array(city_vectors2)
 
     # Calculate cosine similarity matrix
-    similarity_matrix = cosine_similarity(matrix1, matrix2)
+    try:
+        similarity_matrix = cosine_similarity(matrix1, matrix2)
+    except Exception as e:
+        print("excepted!")
+        print(matrix1)
+        print(matrix2)
+        raise
 
     return np.mean(similarity_matrix)
 
@@ -78,21 +104,28 @@ class CityFinder:
 
                     # if there are values after trimming the years
                     if not cdf.empty and has_sufficient_values(cdf, KEY_VALUES_TO_AVG, MINIMUM_SAME_MONTHS_SAMPLE_SIZE):
-                        if copying_files: # this file is good, copy for later
-                            source_file = source_dir + file
-                            print(f'copying from {source_file} to {processed_dir}')
-                            shutil.copy(source_file, processed_dir)
-
                         monthly_avgs_df = cdf.groupby(cdf['DATE'].dt.month)[KEY_VALUES_TO_AVG].mean()
 
-                        labels = {}
-                        for k in KEY_VALUES_TO_COPY:
-                            labels.update({k: cdf[k].iloc[0]}) # take first, assume all values the same
-                        labels.update({'filename': file})
+                        valid = True
+                        for key in KEY_VALUES_TO_AVG:
+                            if len(monthly_avgs_df[key]) != MONTHS_IN_YEAR: # if all months included
+                                valid = False
+                                break
 
-                        monthly_avgs_df.labels = labels
+                        if valid:
+                            if copying_files: # this file is good, copy for later
+                                source_file = source_dir + file
+                                print(f'copying from {source_file} to {processed_dir}')
+                                shutil.copy(source_file, processed_dir)
 
-                        city_dfs.append(monthly_avgs_df)
+                            labels = {}
+                            for k in KEY_VALUES_TO_COPY:
+                                labels.update({k: cdf[k].iloc[0]}) # take first, assume all values the same
+                            labels.update({'filename': file})
+
+                            monthly_avgs_df.labels = labels
+
+                            city_dfs.append(monthly_avgs_df)
             i += 1
             print(f'processed {file} {i}/{files_quantity}')
         
@@ -110,18 +143,11 @@ class CityFinder:
         if reference_city_df is not None:
             similarities_city_data = []
             for weather_df in self.city_dfs:
-
-                # similarity_matrix = cosine_similarity(np.array(reference_city_df[['TAVG', 'PRCP']].values.flatten()).reshape(-1, 1), np.array(weather_df[['TAVG', 'PRCP']].values.flatten()).reshape(-1, 1))
-                avg_similarity = get_similarity_metric(reference_city_df[['TAVG', 'PRCP']], weather_df[['TAVG', 'PRCP']])
-                if weather_df.labels["NAME"] == reference_city_df.labels["NAME"]:
-                    print(f'{weather_df.labels["NAME"]} to itself, found similarity of {avg_similarity}')
-                    # print(similarity_matrix)
-                    print(reference_city_df[['TAVG', 'PRCP']])
-                    print(weather_df[['TAVG', 'PRCP']])
-                else:
-                    print(f'{weather_df.labels["NAME"]} to {reference_city_df.labels["NAME"]}, found similarity of {avg_similarity}')
-
-                similarities_city_data.append(CityData(weather_df.labels["NAME"], avg_similarity, weather_df.labels["LATITUDE"], weather_df.labels["LONGITUDE"], weather_df))
+                if (weather_df.labels["NAME"] == reference_city_df.labels["NAME"]) or \
+                        (get_distance(weather_df.labels["LATITUDE"], weather_df.labels["LONGITUDE"],
+                                    reference_city_df.labels["LATITUDE"], reference_city_df.labels["LONGITUDE"]) > 300): #more than 300kms away
+                    avg_similarity = get_similarity_metric(reference_city_df[KEY_VALUES_TO_AVG], weather_df[KEY_VALUES_TO_AVG])
+                    similarities_city_data.append(CityData(weather_df.labels["NAME"], avg_similarity, weather_df.labels["LATITUDE"], weather_df.labels["LONGITUDE"], weather_df))
 
             return sorted(similarities_city_data, key=lambda city:city.similarity)[-count:]
 

@@ -30,6 +30,16 @@ def get_distance(lat1, lon1, lat2, lon2):
     return distance
 
 
+def is_far_enough(city, other_cities, min_distance=100):
+    """
+    Check if 'city' is at least 'min_distance' km away from all 'other_cities'.
+    """
+    for other_city in other_cities:
+        distance = get_distance(city.latitude, city.longitude, other_city.latitude, other_city.longitude)
+        if distance < min_distance:
+            return False
+    return True
+
 
 # check if list of columns exist
 def columns_exist(df, columns_to_check):
@@ -143,13 +153,22 @@ class CityFinder:
         if reference_city_df is not None:
             similarities_city_data = []
             for weather_df in self.city_dfs:
-                if (weather_df.labels["NAME"] == reference_city_df.labels["NAME"]) or \
-                        (get_distance(weather_df.labels["LATITUDE"], weather_df.labels["LONGITUDE"],
-                                    reference_city_df.labels["LATITUDE"], reference_city_df.labels["LONGITUDE"]) > 300): #more than 300kms away
-                    avg_similarity = get_similarity_metric(reference_city_df[KEY_VALUES_TO_AVG], weather_df[KEY_VALUES_TO_AVG])
-                    similarities_city_data.append(CityData(weather_df.labels["NAME"], avg_similarity, weather_df.labels["LATITUDE"], weather_df.labels["LONGITUDE"], weather_df))
+                avg_similarity = get_similarity_metric(reference_city_df[KEY_VALUES_TO_AVG], weather_df[KEY_VALUES_TO_AVG])
+                similarities_city_data.append(CityData(weather_df.labels["NAME"], avg_similarity, weather_df.labels["LATITUDE"], weather_df.labels["LONGITUDE"], weather_df))
 
-            return sorted(similarities_city_data, key=lambda city:city.similarity)[-count:]
+            sorted_data = sorted(similarities_city_data, key=lambda city:city.similarity, reverse=True)
+            sorted_data_of_sufficient_distance = []
+
+            for city in sorted_data:
+                if is_far_enough(city, sorted_data_of_sufficient_distance) or \
+                        city.labels["NAME"] == reference_city_df.labels["NAME"]:
+                    sorted_data_of_sufficient_distance.append(city)
+                
+                if len(sorted_data_of_sufficient_distance) == count: # we have enough cities
+                    break
+
+            # print(sorted_data_of_sufficient_distance)
+            return sorted_data_of_sufficient_distance
 
         else:
             raise Exception(f'couldn\'t find city {reference_city_name}')

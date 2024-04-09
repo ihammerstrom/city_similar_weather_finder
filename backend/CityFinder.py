@@ -55,26 +55,50 @@ def has_sufficient_values(cdf, key_values_to_avg, min_values):
     return cdf.groupby(cdf['DATE'].dt.month)[key_values_to_avg].count().min().min() > min_values
 
 
-def get_similarity_metric(df1, df2):
+# def get_similarity_metric(df1, df2):
 
-    # Vectorization and preparation for similarity calculation
-    city_vectors1 = [df1.values.flatten() for df in df1]  # Flatten each DataFrame into a single vector
-    city_vectors2 = [df2.values.flatten() for df in df2]
+#     # Vectorization and preparation for similarity calculation
+#     city_vectors1 = [df1.values.flatten() for df in df1]  # Flatten each DataFrame into a single vector
+#     city_vectors2 = [df2.values.flatten() for df in df2]
 
-    # Convert list of vectors into a 2D numpy array
-    matrix1 = np.array(city_vectors1)
-    matrix2 = np.array(city_vectors2)
+#     # Convert list of vectors into a 2D numpy array
+#     matrix1 = np.array(city_vectors1)
+#     matrix2 = np.array(city_vectors2)
 
-    # Calculate cosine similarity matrix
-    try:
-        similarity_matrix = cosine_similarity(matrix1, matrix2)
-    except Exception as e:
-        print("excepted!")
-        print(matrix1)
-        print(matrix2)
-        raise
+#     # Calculate cosine similarity matrix
+#     try:
+#         similarity_matrix = cosine_similarity(matrix1, matrix2)
+#     except Exception as e:
+#         print("excepted!")
+#         print(matrix1)
+#         print(matrix2)
+#         raise
 
-    return np.mean(similarity_matrix)
+#     return np.mean(similarity_matrix)
+
+
+def get_similarity_metric(df1, df2, weights=None):
+    # Define default weights if none provided
+    if weights is None: 
+        weights = {}
+        for key in KEY_VALUES_TO_AVG:
+            weights.update({key: 1.0})
+    
+    # Apply weights to each column
+    for column, weight in weights.items():
+        if column in df1.columns and column in df2.columns:
+            df1[column] *= weight
+            df2[column] *= weight
+
+    # Flatten the DataFrames into vectors
+    vector1 = df1.values.flatten()
+    vector2 = df2.values.flatten()
+
+    # Calculate cosine similarity between the two vectors
+    similarity = cosine_similarity([vector1], [vector2])
+
+    # Return the similarity as a single value
+    return similarity[0][0]
 
 
 class CityFinder:

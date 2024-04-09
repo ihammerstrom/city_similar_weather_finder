@@ -7,7 +7,6 @@ import { ActionMeta, SingleValue } from 'react-select';
 
 interface IProps {
   handleChange: (newValue: SingleValue<IOption>, actionMeta: ActionMeta<IOption>) => void;
-  // handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 
 const AutocompleteForm: React.FC<IProps> = ( { handleChange } ) => {  

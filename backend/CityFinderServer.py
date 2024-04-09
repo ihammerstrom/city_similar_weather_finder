@@ -1,6 +1,7 @@
 from flask import Flask, current_app, request, jsonify
 from CityFinder import CityFinder
 from flask_cors import CORS
+from Config import KEY_VALUES_TO_AVG
 
 app = Flask(__name__)
 CORS(app)
@@ -17,10 +18,16 @@ def get_similar_cities(methods=['GET']):
     name = request.args.get('city_name')
     assert(name != None)
 
+    weights = {}
+    for key in KEY_VALUES_TO_AVG:
+        weights.update({key: float(request.args.get(key, 1))})
+    
+    min_distance = int(request.args.get('min_distance', 100))
+
     if name:
         city_finder = current_app.config.get('city_finder')
         return jsonify({
-            'cities': [city.to_dict() for city in city_finder.get_similar_cities(name, 20)]
+            'cities': [city.to_dict() for city in city_finder.get_similar_cities(name, 20, weights=weights, min_distance=min_distance)]
         })
     else:
         return 'Hello, what\'s your name?'

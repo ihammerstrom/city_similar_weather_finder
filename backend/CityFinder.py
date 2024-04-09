@@ -147,7 +147,7 @@ class CityFinder:
         return city_dfs
 
 
-    def get_similar_cities(self, reference_city_name, count, weights=None, min_distance=None):
+    def get_similar_cities(self, reference_city_name, count, weights=None, min_distance=100):
         reference_city_df = None
         for cdf in self.city_dfs:
             if cdf.labels['NAME'] == reference_city_name:

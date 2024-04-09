@@ -20,25 +20,43 @@ import { ActionMeta, SingleValue } from 'react-select';
  // Define the top-level structure to hold all city data
 
 
+
+
+
 function App() {
   const [cityName, setCityName] = useState<string | undefined>('');
   const [mapCityName, setMapCityName] = useState<string | undefined>('');
   const [similarCities, setSimilarCities] = useState<CityWeatherData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [weatherWeights, setWeatherWeights] = useState<WeatherVariables>({
+  const [weatherOptions, setWeatherOptions] = useState<WeatherVariables>({
     TAVG: 1,
     TMAX: 1,
     TMIN: 1,
     PRCP: 1,
     SNOW: 1,
+    DISTANCE: 100,
   });
 
   const fetchCityData = async (selectedCity: string | undefined) => {
     // Make API call to send selected city
     try {
       if (selectedCity != null){
+
+        const params = {
+          'city_name': selectedCity,
+          'TAVG': weatherOptions['TAVG'],
+          'TMAX': weatherOptions['TMAX'],
+          'TMIN': weatherOptions['TMIN'],
+          'SNOW': weatherOptions['SNOW'],
+          'min_distance': weatherOptions['DISTANCE'],
+        };
+
+        const queryString = Object.entries(params)
+            .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+            .join('&');
+
         setIsLoading(true)
-        const response = await fetch(`${API_URL}/get_similar_cities?city_name=${selectedCity}`);
+        const response = await fetch(`${API_URL}/get_similar_cities?${queryString}`);
         const data = await response.json();
         setIsLoading(false)
         console.log(`Response from sending city ${selectedCity}:`, data);
@@ -81,8 +99,8 @@ function App() {
         <CityForm handleChange={handleCityChange}/>
       </div>
       <WeightingForm 
-        weatherVars={weatherWeights} 
-        setWeatherVars={setWeatherWeights} 
+        weatherVars={weatherOptions} 
+        setWeatherVars={setWeatherOptions} 
         handleSubmit={handleSubmit} 
         cityName={cityName}
       />

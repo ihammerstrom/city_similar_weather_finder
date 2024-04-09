@@ -8,6 +8,7 @@ from CityData import CityData
 import shutil
 import math
 
+
 def get_distance(lat1, lon1, lat2, lon2):
     # Radius of the Earth in kilometers
     R = 6371.0
@@ -45,6 +46,7 @@ def is_far_enough(city, other_cities, min_distance=100):
 def columns_exist(df, columns_to_check):
     return all(col in df.columns for col in columns_to_check)
 
+
 # check if there are a minimum count of values under each relevant column for each month
 def has_sufficient_values(cdf, key_values_to_avg, min_values):
     # 1) group the data by the month on each date
@@ -53,28 +55,6 @@ def has_sufficient_values(cdf, key_values_to_avg, min_values):
     # 4) reduce to the minimum within each column across all months
     # 5) reduce to get the minimum datapoint count across all columns across all months
     return cdf.groupby(cdf['DATE'].dt.month)[key_values_to_avg].count().min().min() > min_values
-
-
-# def get_similarity_metric(df1, df2):
-
-#     # Vectorization and preparation for similarity calculation
-#     city_vectors1 = [df1.values.flatten() for df in df1]  # Flatten each DataFrame into a single vector
-#     city_vectors2 = [df2.values.flatten() for df in df2]
-
-#     # Convert list of vectors into a 2D numpy array
-#     matrix1 = np.array(city_vectors1)
-#     matrix2 = np.array(city_vectors2)
-
-#     # Calculate cosine similarity matrix
-#     try:
-#         similarity_matrix = cosine_similarity(matrix1, matrix2)
-#     except Exception as e:
-#         print("excepted!")
-#         print(matrix1)
-#         print(matrix2)
-#         raise
-
-#     return np.mean(similarity_matrix)
 
 
 def get_similarity_metric(df1, df2, weights=None):
@@ -167,7 +147,7 @@ class CityFinder:
         return city_dfs
 
 
-    def get_similar_cities(self, reference_city_name, count):
+    def get_similar_cities(self, reference_city_name, count, weights=None, min_distance=None):
         reference_city_df = None
         for cdf in self.city_dfs:
             if cdf.labels['NAME'] == reference_city_name:
@@ -177,14 +157,14 @@ class CityFinder:
         if reference_city_df is not None:
             similarities_city_data = []
             for weather_df in self.city_dfs:
-                avg_similarity = get_similarity_metric(reference_city_df[KEY_VALUES_TO_AVG], weather_df[KEY_VALUES_TO_AVG])
+                avg_similarity = get_similarity_metric(reference_city_df[KEY_VALUES_TO_AVG], weather_df[KEY_VALUES_TO_AVG], weights=weights)
                 similarities_city_data.append(CityData(weather_df.labels["NAME"], avg_similarity, weather_df.labels["LATITUDE"], weather_df.labels["LONGITUDE"], weather_df))
 
             sorted_data = sorted(similarities_city_data, key=lambda city:city.similarity, reverse=True)
             sorted_data_of_sufficient_distance = []
 
             for city in sorted_data:
-                if is_far_enough(city, sorted_data_of_sufficient_distance) or \
+                if is_far_enough(city, sorted_data_of_sufficient_distance, min_distance=min_distance) or \
                         city.name == reference_city_df.labels["NAME"]:
                     sorted_data_of_sufficient_distance.append(city)
                 

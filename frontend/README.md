@@ -1,4 +1,7 @@
-# Getting Started with Create React App
+# Frontend to city_similar_weather_finder
+
+This is the frontend to city_similar_weather_finder.
+The rest of this readme is the default to create-react-app, but applies as this was created with create-react-app:
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 

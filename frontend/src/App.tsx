@@ -13,14 +13,6 @@ import LoadingBlock from './LoadingBlock';
 import WeightingForm, { WeatherVariables } from './WeightingForm';
 import { ActionMeta, SingleValue } from 'react-select';
 
-// interface IProps {
-//   handleChange: (newValue: SingleValue<IOption>, actionMeta: ActionMeta<IOption>) => void;
-// }
-
- // Define the top-level structure to hold all city data
-
-
-
 
 
 function App() {
@@ -67,6 +59,7 @@ function App() {
       }
     } catch (error) {
       console.error('Error sending city:', error);
+      alert("Error calling API, please call/text Ian at 206.659.7233 to get him to fix it.")
     }
   };
 
@@ -113,8 +106,10 @@ function App() {
           </h2>
           <CityWeatherGraph data={similarCities.find(city => city.name === mapCityName)!} backgroundData={similarCities[0]}/>
           <MapView locations={similarCities} onCityClick={handleMapCityClick} />
+          <div style={{textAlign: 'center', fontSize: '13px', color: 'grey', marginTop:'15px', marginBottom:'15px' }}>Find me more monthly climate data and I'll expand it beyond US/Canada 😬 (email: <a style={{color: 'grey'}} href="mailto:ihammerstrom@icloud.com">ihammerstrom@icloud.com </a>)</div>
         </>
         }
+        
     </>
   );
 }

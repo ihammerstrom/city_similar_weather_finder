@@ -4,6 +4,7 @@ import { API_URL } from './config';
 import { IOption } from './OptionType';
 import AsyncSelect from 'react-select/async';
 import { ActionMeta, SingleValue } from 'react-select';
+import Alert from 'react-bootstrap/Alert';
 
 interface IProps {
   handleChange: (newValue: SingleValue<IOption>, actionMeta: ActionMeta<IOption>) => void;
@@ -22,6 +23,7 @@ const AutocompleteForm: React.FC<IProps> = ( { handleChange } ) => {
       }
     } catch (error) {
       console.error('Error fetching autocomplete suggestions:', error);
+      alert("Error calling API, please call/text Ian at 206.659.7233 to get him to fix it.")
     }
     return []
   };
@@ -32,7 +34,7 @@ const AutocompleteForm: React.FC<IProps> = ( { handleChange } ) => {
 
   return (
     <Container>
-      <h1 style={{textAlign: 'center'}}>Find US cities with a climate similar to...</h1>
+      <h1 style={{textAlign: 'center'}}>Find cities in the US/Canada with a climate similar to...</h1>
       <form>
       <AsyncSelect
         loadOptions={fetchOptions}

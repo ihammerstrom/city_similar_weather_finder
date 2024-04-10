@@ -105,7 +105,7 @@ class CityFinder:
         for file in os.listdir(source_dir):
 
             #if it's fits the naming scheme of files we want
-            if file.endswith('.csv') and file.startswith('US'):
+            if file.endswith('.csv'):#: and file.startswith('US'):
 
                 cdf = pd.read_csv(os.path.join(source_dir, file))
 

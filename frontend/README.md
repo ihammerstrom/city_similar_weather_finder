@@ -1,7 +1,7 @@
 # Frontend to city_similar_weather_finder
 
 This is the frontend to city_similar_weather_finder.
-The rest of this readme is the default to create-react-app, but applies as this was created with [Create React App](https://github.com/facebook/create-react-app):
+The rest of this readme is the default to create-react-app, but applies as this was created with [Create React App](https://github.com/facebook/create-react-app)
 
 
 ## Available Scripts

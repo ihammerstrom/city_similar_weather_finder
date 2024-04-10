@@ -2,3 +2,5 @@ backend/gsom-latest
 backend/accepted_files_from*
 env
 .DS_Store
+backend/__pycache__
+backend/global-gsom-latest-2

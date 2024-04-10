@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
-// import logo from './logo.svg';
 import './App.css';
-// import Button from 'react-bootstrap/Button';
 import CityForm from './CityForm';
 import { IOption } from './OptionType';
 import { API_URL } from './config';
 import { CityWeatherData } from './CityWeatherData';
 import CityWeatherGraph from './CityWeatherGraph';
 import MapView from './MapView';
-import { map } from 'leaflet';
 import LoadingBlock from './LoadingBlock';
 import WeightingForm, { WeatherVariables } from './WeightingForm';
 import { ActionMeta, SingleValue } from 'react-select';
@@ -30,7 +27,6 @@ function App() {
   });
 
   const fetchCityData = async (selectedCity: string | undefined) => {
-    // Make API call to send selected city
     try {
       if (selectedCity != null){
 
@@ -42,7 +38,7 @@ function App() {
           'SNOW': weatherOptions['SNOW'],
           'min_distance': weatherOptions['DISTANCE'],
         };
-
+        // construct query string of options
         const queryString = Object.entries(params)
             .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
             .join('&');
@@ -52,10 +48,11 @@ function App() {
         const data = await response.json();
         setIsLoading(false)
         console.log(`Response from sending city ${selectedCity}:`, data);
-        setSimilarCities(data['cities'].slice().sort((a: { similarity: number; }, b: { similarity: number; }) => b.similarity - a.similarity))
+        // set the similar cities response, sorting on similarity
+        setSimilarCities(data['cities'].sort((a: { similarity: number; }, b: { similarity: number; }) => b.similarity - a.similarity))
         setMapCityName(selectedCity)
       }else{
-        console.log("selected city is null")
+        console.log("selected city is null, not fetching")
       }
     } catch (error) {
       console.error('Error sending city:', error);
@@ -88,7 +85,7 @@ function App() {
 
   return (
     <>
-      <div style={{ marginRight: '10%', marginLeft: '10%'}}> {/* Add some spacing between the components */}
+      <div style={{ marginRight: '10%', marginLeft: '10%'}}>
         <CityForm handleChange={handleCityChange}/>
       </div>
       <WeightingForm 
@@ -114,9 +111,5 @@ function App() {
   );
 }
 
-
-// const HorizontalLine = () => (
-//   <div style={{ borderTop: "3px solid #000", margin: "30px 0" }}></div>
-// );
 
 export default App;

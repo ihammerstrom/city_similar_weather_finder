@@ -51,11 +51,14 @@ def autocomplete_city_name():
 app.register_blueprint(api_v1, url_prefix='/api/v1')
 
 
+
 def create_app():
     with app.app_context():
         current_app.config['city_finder'] = CityFinder()
     return app
 
 if __name__ == '__main__':
-    create_app()
-    app.run(debug=True)
+    create_app = create_app()
+    create_app.run()
+else:
+    gunicorn_app = create_app()

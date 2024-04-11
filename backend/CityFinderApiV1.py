@@ -1,10 +1,7 @@
-from flask import Flask, current_app, request, jsonify, abort, Blueprint
-from CityFinder import CityFinder
-from flask_cors import CORS
+from flask import current_app, request, jsonify, abort, Blueprint
 from Config import KEY_VALUES_TO_AVG
 
-app = Flask(__name__)
-CORS(app)
+
 api_v1 = Blueprint('api_v1', __name__)
 
 # get similar cities
@@ -48,18 +45,3 @@ def autocomplete_city_name():
             current_app.config.get('city_finder')
                     .get_city_names_with_substring(city_name_substring)
         })
-
-app.register_blueprint(api_v1, url_prefix='/api/v1')
-
-
-
-def create_app():
-    with app.app_context():
-        current_app.config['city_finder'] = CityFinder()
-    return app
-
-if __name__ == '__main__':
-    create_app = create_app()
-    create_app.run()
-else:
-    gunicorn_app = create_app()

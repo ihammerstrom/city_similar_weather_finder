@@ -38,6 +38,7 @@ def get_city_list():
 # get names which contain the city_name_substring
 @api_v1.route('/autocomplete_city_name', methods=['GET'])
 def autocomplete_city_name():
+    print(f'hit autocomplete api with {city_name_substring}')
     city_name_substring = request.args.get('city_name_substring')
     if city_name_substring is None:
         abort(400, description="Missing required field: city_name_substring")

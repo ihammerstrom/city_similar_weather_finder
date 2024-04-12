@@ -11,11 +11,10 @@ def get_similar_cities(methods=['GET']):
     city_name = request.args.get('city_name')
     print(f'{str(datetime.now())} hit query api with {city_name}')
 
-
     weights = {}
     for key in KEY_VALUES_TO_AVG:
         weights.update({key: float(request.args.get(key, 1))})
-    
+
     min_distance = int(request.args.get('min_distance', 100))
 
     if city_name:

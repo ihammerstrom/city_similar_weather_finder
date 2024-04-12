@@ -74,8 +74,8 @@ def get_similarity_metric(df1, df2, weights=None):
 
     start_time = time.time()
     # Flatten the DataFrames into vectors
-    vector1 = df1.values.flatten()
-    vector2 = df2.values.flatten()
+    vector1 = df1.values.flatten()[::2]
+    vector2 = df2.values.flatten()[::2]
     print(f"2.2Time taken: {time.time() - start_time} seconds")
 
     start_time = time.time()

@@ -64,24 +64,24 @@ def get_similarity_metric(df1, df2, weights=None):
     # Define default weights if none provided
     if weights is not None:
         # Apply weights to each column
-        start_time = time.time()
+        # start_time = time.time()
         for column, weight in weights.items():
             if weight != 1:  # optimization
                 if column in df1.columns and column in df2.columns:
                     df1[column] *= weight
                     df2[column] *= weight
-        print(f"2.1Time taken: {time.time() - start_time} seconds")
+        # print(f"2.1Time taken: {time.time() - start_time} seconds")
 
-    start_time = time.time()
+    # start_time = time.time()
     # Flatten the DataFrames into vectors
     vector1 = df1.values.flatten()
     vector2 = df2.values.flatten()
-    print(f"2.2Time taken: {time.time() - start_time} seconds")
+    # print(f"2.2Time taken: {time.time() - start_time} seconds")
 
-    start_time = time.time()
+    # start_time = time.time()
     # Calculate cosine similarity between the two vectors
     similarity = cosine_similarity([vector1], [vector2])
-    print(f"2.3Time taken: {time.time() - start_time} seconds")
+    # print(f"2.3Time taken: {time.time() - start_time} seconds")
 
     # Return the similarity as a single value.
     # this can be reduced to similarity[0][0] as this value (ranging -1 to 1, where 1 is identical)

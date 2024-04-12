@@ -28,6 +28,7 @@ const WeightingForm: React.FC<WeightingFormProps> = ({ weatherVars, setWeatherVa
 
   return (
     <>
+<div style={{ maxWidth: "1200px", margin: "0 auto" }}>
     <h3 style={{marginLeft: "5%", marginTop: "30px" }}> (Optional) Configure the weighting multiplier / minimum distance between cities: </h3>
     <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr)', gap: '10px', alignItems: 'center', marginLeft: "5%", marginRight: "5%", marginTop: "10px" }}>
       {Object.keys(weatherVars).map(key => (
@@ -48,6 +49,7 @@ const WeightingForm: React.FC<WeightingFormProps> = ({ weatherVars, setWeatherVa
       ))}
       <button disabled={cityName == undefined || cityName.length == 0} type="submit" style={{ gridColumn: '2', marginTop: '20px' }}>Submit</button>
     </form>
+    </div>
     </>
   );
 };

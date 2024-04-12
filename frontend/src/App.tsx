@@ -102,6 +102,7 @@ function App() {
             Top {similarCities.length} similar cities:
           </h2>
           <CityWeatherGraph data={similarCities.find(city => city.name === mapCityName)!} backgroundData={similarCities[0]}/>
+          <div style={{textAlign: 'center', margin: '10px'}}>Click a city below to compare it with the origin city:</div>
           <MapView locations={similarCities} onCityClick={handleMapCityClick} />
           <div style={{textAlign: 'center', fontSize: '13px', color: 'grey', marginTop:'15px', marginBottom:'15px' }}>Find me more monthly climate data and I'll expand it beyond US/Canada 😬 (email: <a style={{color: 'grey'}} href="mailto:ihammerstrom@icloud.com">ihammerstrom@icloud.com </a>)</div>
         </>

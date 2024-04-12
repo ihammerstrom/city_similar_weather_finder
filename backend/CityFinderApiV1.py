@@ -1,6 +1,6 @@
 from flask import current_app, request, jsonify, abort, Blueprint
 from Config import KEY_VALUES_TO_AVG
-
+from datetime import datetime
 
 api_v1 = Blueprint('api_v1', __name__)
 
@@ -9,7 +9,7 @@ api_v1 = Blueprint('api_v1', __name__)
 def get_similar_cities(methods=['GET']):
     # Get the 'name' query parameter from the request
     city_name = request.args.get('city_name')
-    print(f'hit query api with {city_name}')
+    print(f'{str(datetime.now())} hit query api with {city_name}')
 
 
     weights = {}
@@ -38,7 +38,7 @@ def get_city_list():
 @api_v1.route('/autocomplete_city_name', methods=['GET'])
 def autocomplete_city_name():
     city_name_substring = request.args.get('city_name_substring')
-    print(f'hit autocomplete api with {city_name_substring}')
+    print(f'{str(datetime.now())} hit autocomplete api with {city_name_substring}')
 
     if city_name_substring is None:
         abort(400, description="Missing required field: city_name_substring")

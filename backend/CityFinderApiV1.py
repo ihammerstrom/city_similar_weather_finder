@@ -20,6 +20,7 @@ def get_similar_cities(methods=['GET']):
 
     if city_name:
         city_finder = current_app.config.get('city_finder')
+        print(f'{str(datetime.now())} done with {city_name}')
         return jsonify({
             'cities': [city.to_dict() for city in city_finder.get_similar_cities(city_name, 20, weights=weights, min_distance=min_distance)]
         })

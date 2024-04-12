@@ -4,7 +4,8 @@ const LoadingBlock: React.FC<{ isLoading: boolean }> = ({ isLoading }) => {
   return (
     <div style={{ height: '100px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       {isLoading ? (
-        <img
+        <>
+          <img
           src="media/MapLoadingWheel.svg"
           style={{
             display: 'block',
@@ -13,6 +14,9 @@ const LoadingBlock: React.FC<{ isLoading: boolean }> = ({ isLoading }) => {
             width: '120px' 
           }}
         />
+        <div>takes about 30s, to be improved...</div>
+        </>
+
       ) : (
         <div /> // show nothing
       )}

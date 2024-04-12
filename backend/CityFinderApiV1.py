@@ -9,6 +9,8 @@ api_v1 = Blueprint('api_v1', __name__)
 def get_similar_cities(methods=['GET']):
     # Get the 'name' query parameter from the request
     city_name = request.args.get('city_name')
+    print(f'hit query api with {city_name}')
+
 
     weights = {}
     for key in KEY_VALUES_TO_AVG:

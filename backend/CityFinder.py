@@ -6,6 +6,7 @@ from Config import FILES_DIR, KEY_VALUES_TO_COPY, KEY_VALUES_TO_AVG, MONTHS_IN_Y
 from CityData import CityData
 import shutil
 import math
+import time
 
 
 # get distance between two points using the Haversine formula
@@ -61,23 +62,26 @@ def has_sufficient_values(cdf, key_values_to_avg, min_values):
 # get a similarity metric by calculating the cosine_similarity between the dataframe weather
 def get_similarity_metric(df1, df2, weights=None):
     # Define default weights if none provided
-    if weights is None: 
-        weights = {}
-        for key in KEY_VALUES_TO_AVG:
-            weights.update({key: 1.0})
-    
-    # Apply weights to each column
-    for column, weight in weights.items():
-        if column in df1.columns and column in df2.columns:
-            df1[column] *= weight
-            df2[column] *= weight
+    if weights is not None:
+        # Apply weights to each column
+        start_time = time.time()
+        for column, weight in weights.items():
+            if weight != 1:  # optimization
+                if column in df1.columns and column in df2.columns:
+                    df1[column] *= weight
+                    df2[column] *= weight
+        print(f"2.1Time taken: {time.time() - start_time} seconds")
 
+    start_time = time.time()
     # Flatten the DataFrames into vectors
     vector1 = df1.values.flatten()
     vector2 = df2.values.flatten()
+    print(f"2.2Time taken: {time.time() - start_time} seconds")
 
+    start_time = time.time()
     # Calculate cosine similarity between the two vectors
     similarity = cosine_similarity([vector1], [vector2])
+    print(f"2.3Time taken: {time.time() - start_time} seconds")
 
     # Return the similarity as a single value.
     # this can be reduced to similarity[0][0] as this value (ranging -1 to 1, where 1 is identical)
@@ -159,25 +163,30 @@ class CityFinder:
     def get_similar_cities(self, reference_city_name, count, weights=None, min_distance=100):
 
         # find reference city's dataframe by a name match
+        start_time = time.time()
         reference_city_df = None
         for cdf in self.city_dfs:
             if cdf.labels['NAME'] == reference_city_name:
                 reference_city_df = cdf
                 break
-        
+        print(f"1Time taken: {time.time() - start_time} seconds")
+
         # if we found the city
         if reference_city_df is not None:
             similarities_city_data = []
             # calculate the similarity to each other city
+            start_time = time.time()
             for weather_df in self.city_dfs:
                 avg_similarity = get_similarity_metric(reference_city_df[KEY_VALUES_TO_AVG], weather_df[KEY_VALUES_TO_AVG], weights=weights)
                 similarities_city_data.append(CityData(weather_df.labels["NAME"], avg_similarity, weather_df.labels["LATITUDE"], weather_df.labels["LONGITUDE"], weather_df))
+            print(f"2Time taken: {time.time() - start_time} seconds")
 
             sorted_data = sorted(similarities_city_data, key=lambda city:city.similarity, reverse=True)
             sorted_data_of_sufficient_distance = []
 
             # filter out cities not far enough away until we have "count" quantity of cities
             # keep original city as reference 
+            start_time = time.time()
             for city in sorted_data:
                 if is_far_enough(city, sorted_data_of_sufficient_distance, min_distance=min_distance) or \
                         city.name == reference_city_df.labels["NAME"]:
@@ -185,8 +194,10 @@ class CityFinder:
                 
                 if len(sorted_data_of_sufficient_distance) == count: # we have enough cities
                     break
-                    
+            print(f"3Time taken: {time.time() - start_time} seconds")
+
             # return the sorted data of a length up to "count" where the first(most similar) value should be the reference city
+            
             return sorted_data_of_sufficient_distance
 
         else:

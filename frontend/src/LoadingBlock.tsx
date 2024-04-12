@@ -14,7 +14,7 @@ const LoadingBlock: React.FC<{ isLoading: boolean }> = ({ isLoading }) => {
             width: '120px' 
           }}
         />
-        <div>takes about 30s, to be improved...</div>
+        <div>takes about 15-30s depending on if weights are changed...</div>
         </>
 
       ) : (

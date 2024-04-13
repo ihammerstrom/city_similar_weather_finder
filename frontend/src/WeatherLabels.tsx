@@ -4,5 +4,5 @@ export const weatherLabels: Record<string, string> = {
     TMIN: "Minimum Temperature",
     PRCP: "Precipitation",
     SNOW: "Snowfall",
-    DISTANCE: "Min Distance (km)"
+    DISTANCE: "Min distance beteen cities(km)"
   };

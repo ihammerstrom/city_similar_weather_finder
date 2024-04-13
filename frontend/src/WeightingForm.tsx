@@ -40,7 +40,7 @@ const WeightingForm: React.FC<WeightingFormProps> = ({ weatherVars, setWeatherVa
         <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr)', gap: '10px', alignItems: 'center', marginLeft: "5%", marginRight: "5%", marginTop: "10px" }}>
         {Object.keys(weatherVars).map(key => (
             <React.Fragment key={key}>
-            <label style={{ textAlign: 'right' }}>
+            <label style={{ textAlign: 'right', minWidth:'280px'}}>
                 {weatherLabels[key]}: {weatherVars[key as keyof WeatherVariables]}{key != "DISTANCE" && 'x'}
             </label>
             <input

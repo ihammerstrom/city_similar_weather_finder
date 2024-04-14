@@ -34,14 +34,14 @@ const WeightingForm: React.FC<WeightingFormProps> = ({ weatherVars, setWeatherVa
         <div style={{color: "#777777"}}>
             This optional step allows you to adjust the algorithm's weighting for each weather component (e.g., Precipitation, Maximum Temperature) to better match your preferences.
             <br/>
-            For example, set Precipitation to 0x if you don't want it to be considered, or increase it to 3x to triple its influence on the similarity calculation.
+            For example, set Precipitation to 0x if you don't want it to be considered, or increase it to 3x to triple it's influence on the similarity calculation.
         </div>
         </div>
         <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr)', gap: '10px', alignItems: 'center', marginLeft: "5%", marginRight: "5%", marginTop: "10px" }}>
         {Object.keys(weatherVars).map(key => (
             <React.Fragment key={key}>
-            <label style={{ textAlign: 'right', minWidth:'280px'}}>
-                {weatherLabels[key]}: {weatherVars[key as keyof WeatherVariables]}{key != "DISTANCE" && 'x'}
+            <label style={{ textAlign: 'right'}}>
+                {weatherLabels[key]}: {weatherVars[key as keyof WeatherVariables]}{key == "DISTANCE" ? 'km' : 'x'}
             </label>
             <input
                 type="range"

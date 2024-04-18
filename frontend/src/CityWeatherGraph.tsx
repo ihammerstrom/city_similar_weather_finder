@@ -28,13 +28,6 @@ const CityWeatherGraph: React.FC<CityWeatherGraphProps> = ({ data, backgroundDat
         yAxisID: 'y1', // Assign to the second Y axis
       },
       {
-        label: 'Snowfall (mm)',
-        data: data.SNOW,
-        borderColor: 'rgb(75, 192, 192)', // Green
-        backgroundColor: 'rgba(75, 192, 192, 0.15)',
-        yAxisID: 'y1',
-      },
-      {
         label: 'Max Temperature (°C)',
         data: data.TMAX,
         borderColor: 'rgb(255, 205, 86)', // Yellow
@@ -61,13 +54,6 @@ const CityWeatherGraph: React.FC<CityWeatherGraphProps> = ({ data, backgroundDat
         borderColor: 'rgb(54, 162, 235, 0.15)', // Blue
         backgroundColor: 'rgba(54, 162, 235, 0.4)',
         yAxisID: 'y1', // Assign to the second Y axis
-      },
-      {
-        label: '(origin) Snowfall (mm)',
-        data: backgroundData.SNOW,
-        borderColor: 'rgb(75, 192, 192, 0.15)', // Green
-        backgroundColor: 'rgba(75, 192, 192, 0.4)',
-        yAxisID: 'y1',
       },
       {
         label: '(origin) Max Temperature (°C)',

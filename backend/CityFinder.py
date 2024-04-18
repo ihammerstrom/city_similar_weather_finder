@@ -2,7 +2,7 @@ import numpy as np
 import os
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
-from Config import FILES_DIR, KEY_VALUES_TO_COPY, KEY_VALUES_TO_AVG, MONTHS_IN_YEAR, MIN_YEAR, MAX_YEAR, MINIMUM_SAME_MONTHS_SAMPLE_SIZE
+from Config import FILES_DIR, KEY_VALUES_TO_COPY, KEY_VALUES_TO_AVG, MONTHS_IN_YEAR, MIN_YEAR, MAX_YEAR, MINIMUM_SAME_MONTHS_SAMPLE_SIZE, DATA_CSV
 from CityData import CityData
 import shutil
 import math
@@ -15,6 +15,7 @@ def get_distance(lat1, lon1, lat2, lon2):
     R = 6371.0
     
     # Convert latitude and longitude from degrees to radians
+
     lat1_rad = math.radians(lat1)
     lon1_rad = math.radians(lon1)
     lat2_rad = math.radians(lat2)
@@ -65,17 +66,24 @@ def get_similarity_metric(df1, df2, weights=None):
     if weights is not None:
         # Apply weights to each column
         # start_time = time.time()
+        df1_copy = df1.copy(deep=True)
+        df2_copy = df2.copy(deep=True)
+
         for column, weight in weights.items():
             if weight != 1:  # optimization
                 if column in df1.columns and column in df2.columns:
-                    df1[column] *= weight
-                    df2[column] *= weight
+                    df1_copy.loc[:, column] = df1_copy.loc[:, column] * weight
+                    df2_copy.loc[:, column] = df2_copy.loc[:, column] * weight
         # print(f"2.1Time taken: {time.time() - start_time} seconds")
+
+    else: # can just use original dataframes, we're not altering values
+        df1_copy = df1
+        df2_copy = df2
 
     # start_time = time.time()
     # Flatten the DataFrames into vectors
-    vector1 = df1.values.flatten()
-    vector2 = df2.values.flatten()
+    vector1 = df1_copy.values.flatten()
+    vector2 = df2_copy.values.flatten()
     # print(f"2.2Time taken: {time.time() - start_time} seconds")
 
     # start_time = time.time()
@@ -91,7 +99,64 @@ def get_similarity_metric(df1, df2, weights=None):
 
 class CityFinder:
     def __init__(self):
-        self.city_dfs = self.get_valid_weather_dataframes()
+        # self.city_dfs = self.get_valid_weather_dataframes()
+
+
+        csv_filepath = DATA_CSV
+
+        # Call the function with the CSV file path
+        # Replace the filepath with your actual file location when running this locally
+        self.city_dfs = self.process_weather_data(csv_filepath)
+
+        # Example usage: Accessing the first city's DataFrame and its labels
+        first_city_df = self.city_dfs[0]
+        print(first_city_df)
+        print(first_city_df.labels)
+
+
+    def process_weather_data(self, csv_filepath):
+        # Read the CSV data into a DataFrame
+        df = pd.read_csv(csv_filepath)
+        
+        # Initialize a list to hold the DataFrames for each city
+        city_dfs = []
+
+        # Loop over each row in the DataFrame to create a separate DataFrame for each city
+        for index, row in df.iterrows():
+
+            temp_columns = [f'meantemp_{i}' for i in range(1, 13)] + \
+                        [f'maxtemp_{i}' for i in range(1, 13)] + \
+                        [f'mintemp_{i}' for i in range(1, 13)] + \
+                        [f'precipitation_{i}' for i in range(1, 13)]
+            if row[temp_columns].isnull().any():
+                continue
+
+            # Get temperature and precipitation columns for this city
+            temp_precip_data = {
+                'DATE': list(range(1, 13)),
+                'TAVG': [row[f'meantemp_{i}'] for i in range(1, 13)],
+                'TMAX': [row[f'maxtemp_{i}'] for i in range(1, 13)],
+                'TMIN': [row[f'mintemp_{i}'] for i in range(1, 13)],
+                'PRCP': [row[f'precipitation_{i}'] for i in range(1, 13)]
+            }
+            city_df = pd.DataFrame(temp_precip_data)
+
+            # Create a DataFrame from the dictionary
+            city_df = city_df[['DATE', 'TAVG', 'TMAX', 'TMIN', 'PRCP']]
+
+            
+            # Add metadata to the DataFrame
+            city_df.labels = {
+                'NAME': f"{row['ASCII Name']}, {row['Country name EN']}",
+                'LATITUDE': float(row['Coordinates'].split(',')[0]),
+                'LONGITUDE': float(row['Coordinates'].split(',')[1].lstrip())
+            }
+            
+            # Add the DataFrame to the list
+            city_dfs.append(city_df)
+        
+        return city_dfs
+
 
     def get_valid_weather_dataframes(self):
         city_dfs = []
@@ -153,7 +218,10 @@ class CityFinder:
             print(f'processed {file} {i}/{files_quantity}')
         
         print(f'kept {len(city_dfs)}/{files_quantity}')
+        print(city_dfs[0:3])
         return city_dfs
+
+
 
     # return cities that have weather data similar to the passed reference city
     # count: count of cities to return
@@ -177,6 +245,7 @@ class CityFinder:
             # calculate the similarity to each other city
             start_time = time.time()
             for weather_df in self.city_dfs:
+                # print(weather_df.labels["NAME"])
                 avg_similarity = get_similarity_metric(reference_city_df[KEY_VALUES_TO_AVG], weather_df[KEY_VALUES_TO_AVG], weights=weights)
                 similarities_city_data.append(CityData(weather_df.labels["NAME"], avg_similarity, weather_df.labels["LATITUDE"], weather_df.labels["LONGITUDE"], weather_df))
             print(f"2Time taken: {time.time() - start_time} seconds")

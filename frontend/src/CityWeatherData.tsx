@@ -1,6 +1,5 @@
 export interface CityWeatherData {
     PRCP: number[];
-    SNOW: number[];
     TAVG: number[];
     TMAX: number[];
     TMIN: number[];

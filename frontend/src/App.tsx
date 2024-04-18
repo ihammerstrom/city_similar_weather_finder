@@ -22,7 +22,6 @@ function App() {
     TMAX: 1,
     TMIN: 1,
     PRCP: 1,
-    SNOW: 1,
     DISTANCE: 100,
   });
 
@@ -35,7 +34,7 @@ function App() {
           'TAVG': weatherOptions['TAVG'],
           'TMAX': weatherOptions['TMAX'],
           'TMIN': weatherOptions['TMIN'],
-          'SNOW': weatherOptions['SNOW'],
+          'PRCP': weatherOptions['PRCP'],
           'min_distance': weatherOptions['DISTANCE'],
         };
         // construct query string of options

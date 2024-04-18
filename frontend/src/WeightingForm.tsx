@@ -6,7 +6,6 @@ export interface WeatherVariables {
   TMAX: number;
   TMIN: number;
   PRCP: number;
-  SNOW: number;
   DISTANCE: number;
 }
 

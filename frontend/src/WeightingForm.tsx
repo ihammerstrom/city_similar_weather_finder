@@ -28,10 +28,10 @@ const WeightingForm: React.FC<WeightingFormProps> = ({ weatherVars, setWeatherVa
   return (
     <>
     <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        <h3 style={{marginLeft: "5%", marginTop: "30px" }}> (Optional) Configure the weighting multiplier / minimum distance between cities: </h3>
+        <h3 style={{marginLeft: "5%", marginTop: "30px" }}> (Optional) Configure climate component importance / minimum distance between cities: </h3>
         <div style={{marginLeft: "5%", marginBottom: "20px"}}> 
         <div style={{color: "#777777"}}>
-            This optional step allows you to adjust the algorithm's weighting for each weather component (e.g., Precipitation, Maximum Temperature) to better match your preferences.
+            This optional step allows you to adjust how important each climate component (e.g., Precipitation, Maximum Temperature) will be to calculating city similarity.
             <br/>
             For example, set Precipitation to 0x if you don't want it to be considered, or increase it to 3x to triple it's influence on the similarity calculation.
         </div>
@@ -48,8 +48,8 @@ const WeightingForm: React.FC<WeightingFormProps> = ({ weatherVars, setWeatherVa
                 value={weatherVars[key as keyof WeatherVariables]}
                 onChange={handleChange}
                 min="0"
-                max={key != "DISTANCE"? "5" : "1000"}
-                step={key != "DISTANCE"? "1" : "10"}
+                max={key != "DISTANCE"? "5" : "2000"}
+                step={key != "DISTANCE"? "1" : "50"}
             />
             </React.Fragment>
         ))}

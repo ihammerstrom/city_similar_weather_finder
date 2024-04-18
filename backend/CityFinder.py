@@ -2,7 +2,7 @@ import numpy as np
 import os
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
-from Config import FILES_DIR, KEY_VALUES_TO_COPY, KEY_VALUES_TO_AVG, MONTHS_IN_YEAR, MIN_YEAR, MAX_YEAR, MINIMUM_SAME_MONTHS_SAMPLE_SIZE, DATA_CSV
+from Config import KEY_VALUES_TO_COPY, KEY_VALUES_TO_AVG, MONTHS_IN_YEAR, MIN_YEAR, MAX_YEAR, MINIMUM_SAME_MONTHS_SAMPLE_SIZE, DATA_CSV
 from CityData import CityData
 import shutil
 import math

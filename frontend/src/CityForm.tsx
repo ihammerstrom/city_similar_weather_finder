@@ -30,7 +30,7 @@ const AutocompleteForm: React.FC<IProps> = ( { handleChange } ) => {
   return (
     <div style={{ maxWidth: "1075px", margin: "0 auto" }}>
       <Container>
-        <h1 style={{ textAlign: 'center' }}>Find cities in the US/Canada with a climate similar to...</h1>
+        <h1 style={{ textAlign: 'center' }}>Find cities with a climate similar to...</h1>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
           <div style={{ marginRight: '10px' }}>Enter city here:</div>
           <form style={{ flex: 1 }}>

@@ -7,5 +7,6 @@ export interface CityWeatherData {
     longitude: number;
     name: string;
     similarity: number;
+    geoname_id: string;
   }
   

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import CityForm from './CityForm';
 import { IOption } from './OptionType';
@@ -13,28 +13,20 @@ import { ActionMeta, SingleValue } from 'react-select';
 
 
 function App() {
-  const [cityName, setCityName] = useState<string | undefined>('');
-  const [mapCityName, setMapCityName] = useState<string | undefined>('');
+  const [selectedCity, setSelectedCity] = useState<IOption | undefined>();
+  const [mapCityName, setMapCityName] = useState<IOption | undefined>();
   const [similarCities, setSimilarCities] = useState<CityWeatherData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [weatherOptions, setWeatherOptions] = useState<WeatherVariables>({
-    TAVG: 1,
-    TMAX: 1,
-    TMIN: 1,
-    PRCP: 1,
     DISTANCE: 200,
   });
 
-  const fetchCityData = async (selectedCity: string | undefined) => {
+  const fetchCityData = async (citySelected: IOption | undefined) => {
     try {
-      if (selectedCity != null){
-
+      console.log('selectedCity is:', citySelected)
+      if (citySelected != null){
         const params = {
-          'city_name': selectedCity,
-          'TAVG': weatherOptions['TAVG'],
-          'TMAX': weatherOptions['TMAX'],
-          'TMIN': weatherOptions['TMIN'],
-          'PRCP': weatherOptions['PRCP'],
+          'geoname_id': citySelected.value,
           'min_distance': weatherOptions['DISTANCE'],
         };
         // construct query string of options
@@ -46,10 +38,11 @@ function App() {
         const response = await fetch(`${API_URL}/get_similar_cities?${queryString}`);
         const data = await response.json();
         setIsLoading(false)
-        console.log(`Response from sending city ${selectedCity}:`, data);
+        console.log(`Response from sending city ${citySelected}:`, data);
+
         // set the similar cities response, sorting on similarity
         setSimilarCities(data['cities'].sort((a: { similarity: number; }, b: { similarity: number; }) => b.similarity - a.similarity))
-        setMapCityName(selectedCity)
+        setMapCityName(citySelected)
       }else{
         console.log("selected city is null, not fetching")
       }
@@ -59,10 +52,18 @@ function App() {
     }
   };
 
+
+  useEffect(() => {
+    console.log('mapcity Data updated:', mapCityName);
+    console.log(mapCityName)
+    console.log(similarCities)
+    console.log(similarCities.find(city => city.geoname_id == mapCityName?.value))
+  }, [mapCityName, similarCities]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log(`submitting ${cityName}`)
-    fetchCityData(cityName)
+    console.log(`submitting ${selectedCity}`)
+    fetchCityData(selectedCity)
   };
 
   const handleCityChange = (
@@ -70,20 +71,34 @@ function App() {
     actionMeta: ActionMeta<IOption>
   ) => {
     // Assuming you want to update the state based on the value of the selected option
-    const selectedCityName = newValue ? newValue.value : undefined;
+    const selectedCityName = newValue ? newValue : undefined;
     console.log(`setting city name to ${selectedCityName}`)
-    setCityName(selectedCityName)
+    setSelectedCity(selectedCityName)
   };
-
   
-  const handleMapCityClick = (cityName: string): void => {
+  const handleMapCityClick = (cityName: IOption): void => {
     console.log(`clicked on ${cityName}`)
     setMapCityName(cityName);
   };
 
 
   return (
+    
     <>
+          {/* <LoadingBlock isLoading={isLoading}/> */}
+
+      {similarCities?.length > 0 &&
+        <>
+          <h2 style={{textAlign: 'center'}}>
+            Top {similarCities.length} similar cities:
+          </h2>
+          <CityWeatherGraph data={similarCities.find(city => city.geoname_id == mapCityName?.value)!} backgroundData={similarCities[0]}/>
+          <h3 style={{textAlign: 'center', margin: '10px', marginLeft: "5%", marginRight: "5%"}}>Click a city below to compare it with the reference city:</h3>
+          <MapView locations={similarCities} onCityClick={handleMapCityClick} />
+        </>
+      }
+      <h1 style={{ textAlign: 'center' }}>Find cities with a climate similar to...</h1>
+
       <div style={{ marginRight: '10%', marginLeft: '10%'}}>
         <CityForm handleChange={handleCityChange}/>
       </div>
@@ -91,22 +106,12 @@ function App() {
         weatherVars={weatherOptions} 
         setWeatherVars={setWeatherOptions} 
         handleSubmit={handleSubmit} 
-        cityName={cityName}
+        cityName={selectedCity}
       />
-        <LoadingBlock isLoading={isLoading}/>
 
-        {similarCities?.length > 0 &&
-        <>
-          <h2 style={{textAlign: 'center'}}>
-            Top {similarCities.length} similar cities:
-          </h2>
-          <CityWeatherGraph data={similarCities.find(city => city.name === mapCityName)!} backgroundData={similarCities[0]}/>
-          <div style={{textAlign: 'center', margin: '10px', marginLeft: "5%", marginRight: "5%"}}>Click a city below to compare it with the reference city. The cities are numbered from 1-{similarCities.length} in order of their similarity to the reference city, with 1 being the reference city, 2 being the most similar, and 20 being the least similar.</div>
-          <MapView locations={similarCities} onCityClick={handleMapCityClick} />
-          <div style={{textAlign: 'center', fontSize: '13px', color: 'grey', marginTop:'15px', marginBottom:'15px' }}>Note: climate data may be several degrees off in some areas, but can still be used for fairly reliable comparison. Only cities with populations greater than 100,000 included. Contact: <a style={{color: 'grey'}} href="mailto:ihammerstrom@icloud.com">ihammerstrom@icloud.com </a></div>
-        </>
-        }
-        
+
+<div style={{textAlign: 'center', fontSize: '13px', color: 'grey', marginTop:'30px', marginBottom:'15px' }}>Note: climate data may be several degrees off in some areas, but can still be used for fairly reliable comparison. Only cities with populations greater than 100,000 included. Contact: <a style={{color: 'grey'}} href="mailto:ihammerstrom@icloud.com">ihammerstrom@icloud.com </a></div>
+
     </>
   );
 }

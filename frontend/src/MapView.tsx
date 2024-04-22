@@ -1,13 +1,13 @@
-// MapView.tsx
-import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import React, { useEffect, useRef, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { CityWeatherData } from './CityWeatherData';
+import { IOption } from './OptionType';
 
 interface MapViewProps {
   locations: CityWeatherData[];
-  onCityClick: (cityName: string) => void;
+  onCityClick: (cityName: IOption) => void;
 }
 
 // Fix marker icon not found issue after build
@@ -19,13 +19,41 @@ L.Icon.Default.mergeOptions({
 });
 
 const MapView: React.FC<MapViewProps> = ({ locations, onCityClick }) => {
+  const mapRef = useRef(null);
+
+//   // Function to reset map view
+//   const ResetMapView = () => {
+//     const map = useMap();
+//     const [prevName, setPrevName] = useState(locations[0]?.name);
+//     useEffect(() => {
+//       console.log("resetmapview:")
+//       console.log(locations[0]?.name)
+//       console.log(prevName)
+//         // Only reset the map view if the first city's name has changed
+//         if (locations[0]?.name !== prevName) {
+//             map.setView([20, 0], 2); // Resets the map to a default view
+//             setPrevName(locations[0]?.name); // Update previous name state
+//         }
+//     }, [locations[0]?.name, map, prevName]); // Dependencies include the current name, map instance, and previous name
+//     return null; // This component does not render anything
+// };
+
   return (
-    <MapContainer center={[locations[0].latitude, locations[0].longitude]} zoom={5} style={{ height: '400px', width: '100%' }}>
+    <MapContainer
+      center={[20, 0]}  // Initial world view center
+      zoom={2}  // Initial zoom level
+      minZoom={2}  // Minimum zoom level to prevent zooming out too far
+      maxZoom={18}  // Maximum zoom level
+      style={{ height: '400px', width: '100%' }}
+      ref={mapRef}
+    >
+
+      {/* <ResetMapView />  // Use the ResetMapView component to control the map view */}
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       {locations.map((location, index) => {
         const icon = L.divIcon({
           html: `<div style="background-color: ${index === 0 ? 'blue' : 'red'}; color: white; font-size: 12px; width: 20px; height: 20px; text-align: center; line-height: 20px; border-radius: 50%;">${index + 1}</div>`,
-          className: '', // Removes extra padding and borders
+          className: '',
           iconSize: [20, 20]
         });
 
@@ -36,7 +64,10 @@ const MapView: React.FC<MapViewProps> = ({ locations, onCityClick }) => {
             icon={icon}
             eventHandlers={{
               click: () => {
-                onCityClick(location.name);
+                onCityClick({
+                  label: location.name,
+                  value: location.geoname_id
+                });
               },
             }}
           >

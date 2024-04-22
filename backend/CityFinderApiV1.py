@@ -8,8 +8,8 @@ api_v1 = Blueprint('api_v1', __name__)
 @api_v1.route('/get_similar_cities')
 def get_similar_cities(methods=['GET']):
     # Get the 'name' query parameter from the request
-    city_name = request.args.get('city_name')
-    print(f'{str(datetime.now())} hit query api with {city_name}')
+    geoname_id = request.args.get('geoname_id')
+    print(f'{str(datetime.now())} hit query api with geoname_id: {geoname_id}')
 
     weights = {}
     for key in KEY_VALUES_TO_AVG:
@@ -17,15 +17,15 @@ def get_similar_cities(methods=['GET']):
 
     min_distance = int(request.args.get('min_distance', 100))
 
-    if city_name:
+    if geoname_id:
         city_finder = current_app.config.get('city_finder')
-        similar_cities = city_finder.get_similar_cities(city_name, 20, weights=weights, min_distance=min_distance)
-        print(f'{str(datetime.now())} done with {city_name}')
+        similar_cities = city_finder.get_similar_cities(geoname_id, 20, min_distance=min_distance)
+        print(f'{str(datetime.now())} done with {geoname_id}')
         return jsonify({
-            'cities': [city.to_dict() for city in similar_cities]
+            'cities': similar_cities
         })
     else:
-        abort(400, description="Missing required field: city_name")
+        abort(400, description="Missing required field: geoname_id")
 
 
 # get the list of available cities
@@ -44,8 +44,7 @@ def autocomplete_city_name():
     if city_name_substring is None:
         abort(400, description="Missing required field: city_name_substring")
 
-    return jsonify({
-        "suggestions":
+    return jsonify(
             current_app.config.get('city_finder')
                     .get_city_names_with_substring(city_name_substring)
-        })
+        )

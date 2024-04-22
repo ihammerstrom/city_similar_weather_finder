@@ -143,7 +143,6 @@ class CityFinder:
             for dist in ['100km', '200km', '500km', '1000km']:
                 similar_cities[dist] = [row[col] for col in df.columns if col.endswith(dist)]
 
-            # # Use Geoname ID and city name as the key
             geo_id = str(row['Geoname ID'])
             city_data[geo_id] = {
                 'weather_data': city_df,
@@ -158,11 +157,10 @@ class CityFinder:
         return city_data
 
     def get_similar_cities(self, geoname_id, count, min_distance=100):
-        # Check if the city is in the dictionary
 
+        # Check if the city is in the dictionary
         if geoname_id in self.city_obj_dict:
             city_info = self.city_obj_dict[geoname_id]
-            print(city_info)
             distance_key = f"{min_distance}km"
             if distance_key in city_info['similar_cities']:
                 # Retrieve similar city keys
@@ -176,8 +174,6 @@ class CityFinder:
                         elif (city_k == geoname_id): # if 1856057 is geoname_id
                             # set similarity to 1 for reference city to itself
                             similar_cities_dict[f"{geoname_id}_{city_info['metadata']['NAME']}_1"] = city_info
-
-                pprint(similar_cities_dict)
 
                 # Fetch full city data for each key
                 return prepare_city_weather_data(similar_cities_dict)
@@ -424,55 +420,6 @@ if __name__ == '__main__':
 
     for city in my_city_finder.get_similar_cities("BRIDGEPORT MUNICIPAL AIRPORT, TX US", 3):
         print(city)
-
-
-
-
-# # print(len(city_dfs))
-
-# # Convert reference dataframe to array
-# reference_city = city_dfs[0]
-
-
-
-
-
-
-# most_similar_index = np.argmax(similarities)
-
-
-
-
-
-
-
-# print(similarities)
-# print(type(similarities))
-# print(max(similarities))
-
-
-# print("Cosine Similarity Matrix:")
-# print(most_similar_index)
-
-
-
-
-
-# # initializing points in numpy arrays
-
-# P1 = np.array((9, 16, 25))
-# P2 = np.array((1, 4, 9))
-
-# # subtracting both the vectors
-
-# temp = P1 - P2
-
-# # Using Formula
-
-# euclid_dist = np.sqrt(np.dot(temp.T, temp))
-
-# # printing Euclidean distance
-# print(euclid_dist)
 
 
 

@@ -54,13 +54,6 @@ function App() {
 
 
   useEffect(() => {
-    console.log('mapcity Data updated:', mapCityName);
-    console.log(mapCityName)
-    console.log(similarCities)
-    console.log(similarCities.find(city => city.geoname_id == mapCityName?.value))
-  }, [mapCityName, similarCities]);
-
-  useEffect(() => {
     fetchCityData(selectedCity)
   }, [selectedCity, weatherOptions]);
 

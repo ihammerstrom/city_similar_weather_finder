@@ -2,6 +2,7 @@ backend/gsom-latest
 backend/accepted_files_from*
 backend/__pycache__
 env
+backend/interpolated_weather_data*
 .DS_Store
 backend/__pycache__
 backend/global-gsom-latest-2

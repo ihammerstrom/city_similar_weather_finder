@@ -28,9 +28,7 @@ const AutocompleteForm: React.FC<IProps> = ( { handleChange } ) => {
   };
 
   return (
-    <div style={{ maxWidth: "1075px", margin: "0 auto" }}>
       <Container>
-
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
           <div style={{ marginRight: '10px' }}>Enter city here:</div>
           <form style={{ flex: 1, minWidth: '200px'}}>
@@ -42,7 +40,6 @@ const AutocompleteForm: React.FC<IProps> = ( { handleChange } ) => {
           </form>
         </div>
       </Container>
-    </div>
   );
 };
 

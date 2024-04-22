@@ -60,6 +60,10 @@ function App() {
     console.log(similarCities.find(city => city.geoname_id == mapCityName?.value))
   }, [mapCityName, similarCities]);
 
+  useEffect(() => {
+    fetchCityData(selectedCity)
+  }, [selectedCity, weatherOptions]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     console.log(`submitting ${selectedCity}`)
@@ -85,33 +89,36 @@ function App() {
   return (
     
     <>
-          {/* <LoadingBlock isLoading={isLoading}/> */}
-
       {similarCities?.length > 0 &&
         <>
           <h2 style={{textAlign: 'center'}}>
-            Top {similarCities.length} similar cities:
+            Top {similarCities.length} similar cities to {selectedCity?.label}
           </h2>
           <CityWeatherGraph data={similarCities.find(city => city.geoname_id == mapCityName?.value)!} backgroundData={similarCities[0]}/>
           <h3 style={{textAlign: 'center', margin: '10px', marginLeft: "5%", marginRight: "5%"}}>Click a city below to compare it with the reference city:</h3>
+          <div style={{textAlign: 'center', fontSize: '13px', color: 'grey', marginTop:'10px', marginBottom:'10px' }}> Cities are ranked by similarity from 1 to {similarCities.length} </div>
+
           <MapView locations={similarCities} onCityClick={handleMapCityClick} />
         </>
       }
-      <h1 style={{ textAlign: 'center' }}>Find cities with a climate similar to...</h1>
+      <div style={{ maxWidth: "1075px", margin: "0 auto" }}>
+          <h1 style={{ textAlign: 'center' }}>Find cities with a climate similar to...</h1>
+          <div style={{ marginRight: '10%', marginLeft: '10%'}}>
+            <CityForm handleChange={handleCityChange}/>
+            <div style={{marginTop: '20px'}}>
+              <WeightingForm 
+                weatherVars={weatherOptions} 
+                setWeatherVars={setWeatherOptions} 
+                cityName={selectedCity}
+              />
+            </div>
+          </div>
 
-      <div style={{ marginRight: '10%', marginLeft: '10%'}}>
-        <CityForm handleChange={handleCityChange}/>
       </div>
-      <WeightingForm 
-        weatherVars={weatherOptions} 
-        setWeatherVars={setWeatherOptions} 
-        handleSubmit={handleSubmit} 
-        cityName={selectedCity}
-      />
 
-
-<div style={{textAlign: 'center', fontSize: '13px', color: 'grey', marginTop:'30px', marginBottom:'15px' }}>Note: climate data may be several degrees off in some areas, but can still be used for fairly reliable comparison. Only cities with populations greater than 100,000 included. Contact: <a style={{color: 'grey'}} href="mailto:ihammerstrom@icloud.com">ihammerstrom@icloud.com </a></div>
-
+      {similarCities?.length > 0 &&
+        <div style={{textAlign: 'center', fontSize: '13px', color: 'grey', marginTop:'150px', marginBottom:'15px' }}>Note: climate data may be several degrees off in some areas, but can still be used for fairly reliable comparison. Only includes cities with populations greater than 50,000 people. Contact: <a style={{color: 'grey'}} href="mailto:ihammerstrom@icloud.com">ihammerstrom@icloud.com </a></div>
+      }
     </>
   );
 }

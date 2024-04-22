@@ -6,5 +6,5 @@ export const weatherLabels: Record<string, string | ReactNode> = {
     // TMAX: "Maximum Temperature",
     // TMIN: "Minimum Temperature",
     // PRCP: "Precipitation",
-    DISTANCE: <span>Minimum distance between cities:</span>
+    DISTANCE: <span>Minimum distance between cities: </span>
   };

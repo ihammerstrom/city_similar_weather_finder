@@ -19,7 +19,7 @@ L.Icon.Default.mergeOptions({
 });
 
 const MapView: React.FC<MapViewProps> = ({ locations, onCityClick }) => {
-  const mapRef = useRef(null);
+  // const mapRef = useRef(null);
 
 //   // Function to reset map view
 //   const ResetMapView = () => {
@@ -43,9 +43,8 @@ const MapView: React.FC<MapViewProps> = ({ locations, onCityClick }) => {
       center={[20, 0]}  // Initial world view center
       zoom={2}  // Initial zoom level
       minZoom={2}  // Minimum zoom level to prevent zooming out too far
-      maxZoom={18}  // Maximum zoom level
+      maxZoom={10}  // Maximum zoom level
       style={{ height: '400px', width: '100%' }}
-      ref={mapRef}
     >
 
       {/* <ResetMapView />  // Use the ResetMapView component to control the map view */}

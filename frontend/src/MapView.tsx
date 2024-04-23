@@ -10,6 +10,7 @@ interface MapViewProps {
   onCityClick: (cityName: IOption) => void;
 }
 
+
 // Fix marker icon not found issue after build
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -19,22 +20,16 @@ L.Icon.Default.mergeOptions({
 });
 
 const MapView: React.FC<MapViewProps> = ({ locations, onCityClick }) => {
-  // const mapRef = useRef(null);
+//   const mapRef = useRef(null);
 
 //   // Function to reset map view
 //   const ResetMapView = () => {
 //     const map = useMap();
-//     const [prevName, setPrevName] = useState(locations[0]?.name);
 //     useEffect(() => {
 //       console.log("resetmapview:")
 //       console.log(locations[0]?.name)
-//       console.log(prevName)
-//         // Only reset the map view if the first city's name has changed
-//         if (locations[0]?.name !== prevName) {
 //             map.setView([20, 0], 2); // Resets the map to a default view
-//             setPrevName(locations[0]?.name); // Update previous name state
-//         }
-//     }, [locations[0]?.name, map, prevName]); // Dependencies include the current name, map instance, and previous name
+//     }, [locations[0]?.name, map]); // Dependencies include the current name, map instance, and previous name
 //     return null; // This component does not render anything
 // };
 
@@ -43,7 +38,7 @@ const MapView: React.FC<MapViewProps> = ({ locations, onCityClick }) => {
       center={[20, 0]}  // Initial world view center
       zoom={2}  // Initial zoom level
       minZoom={2}  // Minimum zoom level to prevent zooming out too far
-      maxZoom={10}  // Maximum zoom level
+      maxZoom={6}  // Maximum zoom level
       style={{ height: '400px', width: '100%' }}
     >
 

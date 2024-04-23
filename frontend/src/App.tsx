@@ -88,7 +88,7 @@ function App() {
             Top {similarCities.length} similar cities to {selectedCity?.label}
           </h2>
           <CityWeatherGraph data={similarCities.find(city => city.geoname_id == mapCityName?.value)!} backgroundData={similarCities[0]}/>
-          <h3 style={{textAlign: 'center', margin: '10px', marginLeft: "5%", marginRight: "5%"}}>Click a city below to compare it with the reference city:</h3>
+          <h3 style={{textAlign: 'center', margin: '10px', marginLeft: "5%", marginRight: "5%"}}>Click a city below to compare it above with the reference city:</h3>
           <div style={{textAlign: 'center', fontSize: '13px', color: 'grey', marginTop:'10px', marginBottom:'10px' }}> Cities are ranked by similarity from 1 to {similarCities.length} </div>
 
           <MapView locations={similarCities} onCityClick={handleMapCityClick} />
@@ -110,7 +110,7 @@ function App() {
       </div>
 
       {similarCities?.length > 0 &&
-        <div style={{textAlign: 'center', fontSize: '13px', color: 'grey', marginTop:'150px', marginBottom:'15px' }}>Note: climate data may be several degrees off in some areas, but can still be used for fairly reliable comparison. Only includes cities with populations greater than 50,000 people. Contact: <a style={{color: 'grey'}} href="mailto:ihammerstrom@icloud.com">ihammerstrom@icloud.com </a></div>
+        <div style={{textAlign: 'center', fontSize: '13px', color: 'grey', marginTop:'150px', marginBottom:'15px', marginLeft: '3%', marginRight: '3%' }}>Note: climate data may be several degrees off in some areas, but can still be used for fairly reliable comparison. Only includes cities with populations greater than 50,000 people. Contact: <a style={{color: 'grey'}} href="mailto:ihammerstrom@icloud.com">ihammerstrom@icloud.com </a></div>
       }
     </>
   );

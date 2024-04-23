@@ -78,7 +78,7 @@ const CityWeatherGraph: React.FC<CityWeatherGraphProps> = ({ data, backgroundDat
     plugins: {
       title: {
         display: true,
-        text: `${data.name} ${data.similarity.toPrecision(5)}`, // Use city name as chart title
+        text: `${data.name}${backgroundData.name !== data.name ? ` vs ${backgroundData.name}` : ''}`, // Use city name as chart title
       },
     },
     maintainAspectRatio: false,

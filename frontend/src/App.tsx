@@ -16,10 +16,11 @@ function App() {
   const [selectedCity, setSelectedCity] = useState<IOption | undefined>();
   const [mapCityName, setMapCityName] = useState<IOption | undefined>();
   const [similarCities, setSimilarCities] = useState<CityWeatherData[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  // const [isLoading, setIsLoading] = useState<boolean>(false);
   const [weatherOptions, setWeatherOptions] = useState<WeatherVariables>({
     DISTANCE: 200,
   });
+  const [key, setKey] = useState(0); // use to force map rerender
 
   const fetchCityData = async (citySelected: IOption | undefined) => {
     try {
@@ -34,10 +35,10 @@ function App() {
             .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
             .join('&');
 
-        setIsLoading(true)
+        // setIsLoading(true)
         const response = await fetch(`${API_URL}/get_similar_cities?${queryString}`);
         const data = await response.json();
-        setIsLoading(false)
+        // setIsLoading(false)
         console.log(`Response from sending city ${citySelected}:`, data);
 
         // set the similar cities response, sorting on similarity
@@ -52,16 +53,20 @@ function App() {
     }
   };
 
+  const reloadMap = () => {
+    setKey(prevKey => prevKey + 1);  // Increment key to force re-render
+  };
 
   useEffect(() => {
     fetchCityData(selectedCity)
+    reloadMap()
   }, [selectedCity, weatherOptions]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log(`submitting ${selectedCity}`)
-    fetchCityData(selectedCity)
-  };
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault()
+  //   console.log(`submitting ${selectedCity}`)
+  //   fetchCityData(selectedCity)
+  // };
 
   const handleCityChange = (
     newValue: SingleValue<IOption>,
@@ -91,11 +96,11 @@ function App() {
           <h3 style={{textAlign: 'center', margin: '10px', marginLeft: "5%", marginRight: "5%"}}>Click a city below to compare it above with the reference city:</h3>
           <div style={{textAlign: 'center', fontSize: '13px', color: 'grey', marginTop:'10px', marginBottom:'10px' }}> Cities are ranked by similarity from 1 to {similarCities.length} </div>
 
-          <MapView locations={similarCities} onCityClick={handleMapCityClick} />
+          <MapView key={key} locations={similarCities} onCityClick={handleMapCityClick} />
         </>
       }
       <div style={{ maxWidth: "1075px", margin: "0 auto" }}>
-          <h1 style={{ textAlign: 'center' }}>Find cities with a climate similar to...</h1>
+          <h1 style={{ textAlign: 'center', marginLeft: '10px', marginRight: '10px' }}>Find cities around the world with a climate similar to...</h1>
           <div style={{ marginRight: '10%', marginLeft: '10%'}}>
             <CityForm handleChange={handleCityChange}/>
             <div style={{marginTop: '20px'}}>

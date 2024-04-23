@@ -5,8 +5,6 @@ Do you have a city of which you like the weather, but perhaps it's a bit unaffor
 
 This is a tool to help find cities that have weather similar to a given city in the world.
 
-Send me your monthly climate data c: 
-
 ihammerstrom@icloud.com
 
 <br/>

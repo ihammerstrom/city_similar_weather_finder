@@ -9,4 +9,4 @@ MINIMUM_SAME_MONTHS_SAMPLE_SIZE = 1 # minimum month samples of data per each col
 # FILES_DIR = "gsom-latest/"
 # FILES_DIR = "test_data/"
 # FILES_DIR = "global-gsom-latest-2/"
-DATA_CSV = sys.argv[1] 
+DATA_CSV = "interpolated_weather_data3_with_distances.csv"

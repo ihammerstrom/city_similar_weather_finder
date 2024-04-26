@@ -20,10 +20,43 @@ def get_haversine_distance(lat1, lon1, lat2, lon2):
     distance = R * c
     return distance
 
-def add_similar_cities_to_csv(csv_filepath, output_csv_filepath, distances):
+def determine_hemisphere(lat):
+    return 'N' if float(lat) >= 0 else 'S'
+
+def shift_seasonal_data(df):
+    """Shift the weather data by 6 months for Southern Hemisphere cities"""
+    # Define a list of prefixes for weather types based on your dataset structure
+    weather_types = ['maxtemp_', 'meantemp_', 'mintemp_', 'precipitation_']
+    hemisphere_shift = df['Hemisphere'] == 'S'  # Mask for Southern Hemisphere cities
+    
+    # Prepare a dictionary to hold the shifted data temporarily
+    temp_shifted_data = {}
+
+    # Loop through each weather type and prepare shifted data
+    for weather in weather_types:
+        for i in range(1, 13):  # Months are indexed from 1 to 12
+            original_col = f"{weather}{i}"
+            shifted_col = f"{weather}{((i + 5) % 12) + 1}"  # Calculate shifted month index
+
+            # Store shifted data in a temporary dictionary if the column exists
+            if original_col in df.columns:
+                # Only store shifted data for Southern Hemisphere to avoid unnecessary operations
+                temp_shifted_data[shifted_col] = df.loc[hemisphere_shift, original_col].values
+
+    # Now apply the shifted data from the temporary dictionary to the DataFrame
+    for shifted_col, data in temp_shifted_data.items():
+        df.loc[hemisphere_shift, shifted_col] = data
+
+    return df
+
+def add_similar_cities_to_df(df, output_csv_filepath, distances, shift_southern_hemisphere=False):
     start_time = time.time()
-    df = pd.read_csv(csv_filepath)
-    df.set_index('Geoname ID', inplace=True)
+
+
+    col_prefix= ""
+    if shift_southern_hemisphere:
+        col_prefix = "shifted_"
+        df = shift_seasonal_data(df)
 
     weather_columns = [col for col in df.columns if 'temp_' in col or 'precipitation_' in col]
     city_vectors = df[weather_columns].fillna(0).to_numpy()
@@ -48,7 +81,7 @@ def add_similar_cities_to_csv(csv_filepath, output_csv_filepath, distances):
             
             # Set similar city data for each distance
             for i, city_data in enumerate(similar_cities, start=1):
-                column_name = f'similar_city_{i}_{distance}km'
+                column_name = f'{col_prefix}similar_city_{i}_{distance}km'
                 df.at[index, column_name] = city_data
                 operations_done += 1
 
@@ -61,10 +94,10 @@ def add_similar_cities_to_csv(csv_filepath, output_csv_filepath, distances):
                     print(f"Progress: {operations_done}/{total_operations} operations done. "
                           f"Estimated time remaining: {timedelta(seconds=remaining_time)}", end='\r')
 
-    df.reset_index(inplace=True)
-    df.to_csv(output_csv_filepath, index=False)
+
     print(f"\nDataFrame with similar cities saved to: {output_csv_filepath}")
     print(f"Total time elapsed: {timedelta(seconds=time.time() - start_time)}")
+    return df
 
 
 def get_similar_cities(geoname_id, similarities, full_df, used_cities_by_reference, distance):
@@ -102,4 +135,11 @@ if __name__ == '__main__':
     csv_output_path = csv_input_path.split('.')[0] + "_with_distances.csv"
     distances = [100, 200, 500, 1000]  # Distances in kilometers
 
-    add_similar_cities_to_csv(csv_input_path, csv_output_path, distances)
+    df = pd.read_csv(csv_input_path)
+    df['Hemisphere'] = df['Coordinates'].apply(lambda x: determine_hemisphere(x.split(',')[0]))
+    df.set_index('Geoname ID', inplace=True)
+    df = add_similar_cities_to_df(df, csv_output_path, distances)
+    df = add_similar_cities_to_df(df, csv_output_path, distances, shift_southern_hemisphere=True)
+    shift_seasonal_data(df) # shift southern hemisphere data back
+    df.reset_index(inplace=True)
+    df.to_csv(csv_output_path, index=False)

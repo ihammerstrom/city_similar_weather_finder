@@ -19,6 +19,7 @@ function App() {
   // const [isLoading, setIsLoading] = useState<boolean>(false);
   const [weatherOptions, setWeatherOptions] = useState<WeatherVariables>({
     DISTANCE: 200,
+    SHIFTED: true,
   });
   const [key, setKey] = useState(0); // use to force map rerender
 
@@ -29,6 +30,7 @@ function App() {
         const params = {
           'geoname_id': citySelected.value,
           'min_distance': weatherOptions['DISTANCE'],
+          'shift_southern_hemisphere_climate': weatherOptions['SHIFTED']
         };
         // construct query string of options
         const queryString = Object.entries(params)
@@ -92,7 +94,7 @@ function App() {
           <h2 style={{textAlign: 'center'}}>
             Top {similarCities.length} similar cities to {selectedCity?.label}
           </h2>
-          <CityWeatherGraph data={similarCities.find(city => city.geoname_id == mapCityName?.value)!} backgroundData={similarCities[0]}/>
+          <CityWeatherGraph data={similarCities.find(city => city.geoname_id == mapCityName?.value)!} backgroundData={similarCities[0]} shifting={weatherOptions.SHIFTED}/>
           <h3 style={{textAlign: 'center', margin: '10px', marginLeft: "5%", marginRight: "5%"}}>Click a city below to compare it above with the reference city:</h3>
           <div style={{textAlign: 'center', fontSize: '13px', color: 'grey', marginTop:'10px', marginBottom:'10px' }}> Cities are ranked by similarity from 1 to {similarCities.length} </div>
 

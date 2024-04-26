@@ -1,6 +1,6 @@
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
-from Config import KEY_VALUES_TO_COPY, KEY_VALUES_TO_AVG, MONTHS_IN_YEAR, MIN_YEAR, MAX_YEAR, MINIMUM_SAME_MONTHS_SAMPLE_SIZE, DATA_CSV
+from Config import USED_DISTANCES, KEY_VALUES_TO_COPY, KEY_VALUES_TO_AVG, MONTHS_IN_YEAR, MIN_YEAR, MAX_YEAR, MINIMUM_SAME_MONTHS_SAMPLE_SIZE, DATA_CSV
 from CityData import CityData
 import time
 from SimilarCityCSVCreator import get_haversine_distance
@@ -9,23 +9,26 @@ from pprint import pprint
 
 
 # check if the city is far enough from the other cities
-def is_far_enough(city, other_cities, min_distance=100):
-    """
-    Check if 'city' is at least 'min_distance' km away from all 'other_cities'.
-    """
-    for other_city in other_cities:
-        distance = get_haversine_distance(city.latitude, city.longitude, other_city.latitude, other_city.longitude)
-        if distance < min_distance:
-            return False
-    return True
+# def is_far_enough(city, other_cities, min_distance=100):
+#     """
+#     Check if 'city' is at least 'min_distance' km away from all 'other_cities'.
+#     """
+#     for other_city in other_cities:
+#         distance = get_haversine_distance(city.latitude, city.longitude, other_city.latitude, other_city.longitude)
+#         if distance < min_distance:
+#             return False
+#     return True
+
 
 # prepares response for what frontend expects
 def prepare_city_weather_data(city_data):
+    """ Prepare city weather data for frontend consumption, optionally shifting Southern Hemisphere data. """
     transformed_data = []
 
     for key, city in city_data.items():
         # Extract weather data columns into lists
         weather_df = city['weather_data']
+
         prcp = weather_df['PRCP'].tolist()
         tavg = weather_df['TAVG'].tolist()
         tmax = weather_df['TMAX'].tolist()
@@ -37,8 +40,10 @@ def prepare_city_weather_data(city_data):
         latitude = metadata['LATITUDE']
         longitude = metadata['LONGITUDE']
         geo_id = metadata['GEO_ID']
+        hemisphere = metadata['HEMISPHERE']
 
-        # Extract similarity value from key if available (assuming it follows a specific format)
+
+        # Extract similarity value from key if available
         similarity = float(key.split('_')[-1])
 
         # Append formatted city data
@@ -51,12 +56,12 @@ def prepare_city_weather_data(city_data):
             'longitude': longitude,
             'name': name,
             'similarity': similarity,
-            'geoname_id': geo_id
+            'geoname_id': geo_id,
+            'hemisphere': hemisphere
         }
         transformed_data.append(city_info)
 
     return transformed_data
-
 
 # check if list of columns exist in the dataframe
 def columns_exist(df, columns_to_check):
@@ -116,8 +121,8 @@ class CityFinder:
     def get_city_weather_data_from_csv(self, csv_filepath):
         # Read the CSV data into a DataFrame
         df = pd.read_csv(csv_filepath)
-        
-        # Initialize a dictionary to hold the DataFrames for each city, keyed by 'Geoname ID_cityname'
+        print(df.columns)
+        # Initialize a dictionary to hold the DataFrames for each city, keyed by 'Geoname ID'
         city_data = {}
 
         # Loop over each row in the DataFrame to create a separate DataFrame for each city
@@ -126,6 +131,7 @@ class CityFinder:
                            [f'maxtemp_{i}' for i in range(1, 13)] + \
                            [f'mintemp_{i}' for i in range(1, 13)] + \
                            [f'precipitation_{i}' for i in range(1, 13)]
+            
             if row[temp_columns].isnull().any():
                 continue
 
@@ -138,33 +144,54 @@ class CityFinder:
             }
             city_df = pd.DataFrame(weather_data)
 
-            # Create a dictionary to hold similar cities organized by distance
-            similar_cities = {}
-            for dist in ['100km', '200km', '500km', '1000km']:
-                similar_cities[dist] = [row[col] for col in df.columns if col.endswith(dist)]
+            # Create a dictionary to hold similar and shifted similar cities organized by distance
+            similar_cities = {dist: [] for dist in USED_DISTANCES}
+            shifted_similar_cities = {dist: [] for dist in USED_DISTANCES}
 
+            for col in df.columns:
+                if any(col.endswith(f"{dist}") for dist in USED_DISTANCES):
+                    distance_key = col.split('_')[-1]
+                    if 'shifted' in col:
+                        shifted_similar_cities[distance_key].append(row[col])
+                    else:
+                        similar_cities[distance_key].append(row[col])
+
+            print(df.columns)
             geo_id = str(row['Geoname ID'])
             city_data[geo_id] = {
                 'weather_data': city_df,
                 'similar_cities': similar_cities,
+                'shifted_similar_cities': shifted_similar_cities,
                 'metadata': {
                     'NAME': f"{row['ASCII Name']}, {row['Country name EN']}",
                     'LATITUDE': float(row['Coordinates'].split(',')[0]),
                     'LONGITUDE': float(row['Coordinates'].split(',')[1]),
+                    'HEMISPHERE': row['Hemisphere'],
                     'GEO_ID': geo_id
                 }
             }
         return city_data
 
-    def get_similar_cities(self, geoname_id, count, min_distance=100):
+    def get_similar_cities(self, geoname_id, count, min_distance, shift_southern_hemisphere_climate=False):
 
         # Check if the city is in the dictionary
         if geoname_id in self.city_obj_dict:
             city_info = self.city_obj_dict[geoname_id]
+
+            if shift_southern_hemisphere_climate:
+                dataset_key = 'shifted_similar_cities'
+                print("ok")
+            else:
+                dataset_key = 'similar_cities'
+                print("ok2")
+            # dataset_key = 'shifted_similar_cities' if shift_southern_hemisphere_climate == True else 'similar_cities'
             distance_key = f"{min_distance}km"
-            if distance_key in city_info['similar_cities']:
+
+            print(dataset_key, shift_southern_hemisphere_climate)
+            if distance_key in city_info[dataset_key]:
                 # Retrieve similar city keys
-                similar_city_keys = city_info['similar_cities'][distance_key][:count]
+                similar_city_keys = city_info[dataset_key][distance_key][:count]
+                print(dataset_key, similar_city_keys)
                 similar_cities_dict = {}
 
                 for similar_city_key in similar_city_keys: # like 1856057_Nagoya_0.78
@@ -183,6 +210,32 @@ class CityFinder:
 
         else:
             raise Exception(f"City with key '{geoname_id}' not found.")
+
+    # def get_similar_cities(self, geoname_id, count, min_distance, shift_southern_hemisphere_climate=False):
+    #     """ Retrieve similar cities, optionally shifting climate data for Southern Hemisphere comparisons. """
+    #     if geoname_id in self.city_obj_dict:
+    #         city_info = self.city_obj_dict[geoname_id]
+    #         distance_key = f"{min_distance}km"
+    #         if distance_key in city_info['similar_cities']:
+    #             similar_city_keys = city_info['similar_cities'][distance_key][:count]
+    #             similar_cities_dict = {}
+
+    #             for similar_city_key in similar_city_keys:
+    #                 city_key = similar_city_key.split('_')[0]  # Assuming city_key is the first part of the similar_city_key
+    #                 if city_key in self.city_obj_dict:
+    #                     similar_cities_dict[similar_city_key] = self.city_obj_dict[city_key]
+
+    #             # Fetch full city data for each key with climate data adjustment if required
+    #             return prepare_city_weather_data(similar_cities_dict, shift_climate=shift_southern_hemisphere_climate)
+    #         else:
+    #             raise Exception(f"No similar cities found for the specified distance key '{distance_key}' \
+    #                             in city with geoname_id: '{geoname_id}'.")
+    #     else:
+    #         raise Exception(f"City with key '{geoname_id}' not found.")
+
+
+
+
 
     def get_city_list(self):
         return [{'label': city['metadata']['NAME'], 'value': key} for key, city in self.city_obj_dict.items()]

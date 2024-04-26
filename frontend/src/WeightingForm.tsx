@@ -3,66 +3,62 @@ import { weatherLabels } from './WeatherLabels';
 import { IOption } from './OptionType';
 
 export interface WeatherVariables {
-  // TAVG: number;
-  // TMAX: number;
-  // TMIN: number;
-  // PRCP: number;
   DISTANCE: number;
+  SHIFTED: boolean;
 }
 
 interface WeightingFormProps {
   weatherVars: WeatherVariables;
   setWeatherVars: (updatedVars: WeatherVariables) => void;
-  // handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   cityName: IOption | undefined;
 }
 
 const WeightingForm: React.FC<WeightingFormProps> = ({ weatherVars, setWeatherVars, cityName }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    // Only parse the value as an integer for the range inputs
-    const isRangeInput = e.target.type === 'range';
+    const { name, value, type } = e.target;
+    const newValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : parseInt(value);
+    
     setWeatherVars({
-      DISTANCE: parseInt(value),
+      ...weatherVars,
+      [name]: newValue,
     });
   };
-      // form style={{ display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr)', gap: '10px', alignItems: 'center', marginLeft: "5%", marginRight: "5%", marginTop: "10px" }}>
-  return (      
 
-      <>
-      {/* <h3 style={{ marginLeft: "5%", marginTop: "30px" }}>
-        Minimum distance between similar cities:
-      </h3> */}
-        {/* <div style={{ color: "#777777" }}>
-          This optional step allows you to adjust how important each climate component (e.g., Precipitation, Maximum Temperature) will be to calculating city similarity.
-          <br />
-          For example, set Precipitation to 0x if you don't want it to be considered, or increase it to 3x to triple its influence on the similarity calculation.
-        </div> */}
-
-      <form>
-        {Object.keys(weatherVars).map((key) => (
-          <React.Fragment key={key}>
-            <label style={{ textAlign: 'right' }}>
-              {weatherLabels[key]}
-            </label>
-            {/* //: {weatherVars[key as keyof WeatherVariables]}{key === "DISTANCE" ? ' km' : 'x'} */}
-              <select
-                name={key}
-                value={weatherVars[key as keyof WeatherVariables].toString()}
-                onChange={handleChange} // Correctly handle changes
-                style={{minWidth: '50px', maxWidth: '200px'}}
-              >
-                <option value="100">100km</option>
-                <option value="200">200km</option>
-                <option value="500">500km</option>
-                <option value="1000">1000km</option>
-              </select>
+  return (
+    <>
+      <form style={{ display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr)', gap: '10px', alignItems: 'center', marginLeft: "5%", marginRight: "5%", marginTop: "10px" }}>
+        <div>
+          <label style={{ textAlign: 'right' }}>
+            {weatherLabels['DISTANCE'] || 'Distance'}
+          </label>
+          <select
+            name="DISTANCE"
+            value={weatherVars.DISTANCE.toString()}
+            onChange={handleChange}
+            style={{ minWidth: '50px', maxWidth: '200px' }}
+          >
+            <option value="100">100km</option>
+            <option value="200">200km</option>
+            <option value="500">500km</option>
+            <option value="1000">1000km</option>
+          </select>
+        </div>
+        
+        {/* New line for SHIFTED checkbox */}
+        <div style={{ gridColumn: '1 / -1' }}> {/* This will extend the checkbox across the full width of the form */}
+          <label>
             
-          </React.Fragment>
-        ))}
-        {/* <button disabled={cityName === undefined || cityName.label.length === 0} type="submit" style={{ gridColumn: '2', marginTop: '20px' }}>Submit</button> */}
+            <input
+              type="checkbox"
+              name="SHIFTED"
+              checked={weatherVars.SHIFTED}
+              onChange={handleChange}
+            />
+            {weatherLabels['SHIFTED'] || 'Shift Seasons for Southern Hemisphere'}
+          </label>
+        </div>
       </form>
-      </>
+    </>
   );
 };
 

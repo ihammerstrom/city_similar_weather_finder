@@ -8,5 +8,6 @@ export interface CityWeatherData {
     name: string;
     similarity: number;
     geoname_id: string;
+    hemisphere: string;
   }
   

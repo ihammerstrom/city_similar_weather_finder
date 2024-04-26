@@ -11,11 +11,9 @@ interface WeightingFormProps {
   weatherVars: WeatherVariables;
   setWeatherVars: (updatedVars: WeatherVariables) => void;
   cityName: IOption | undefined;
-  displayFahrenheit: boolean;
-  setDisplayFahrenheit: (value: boolean) => void;
 }
 
-const WeightingForm: React.FC<WeightingFormProps> = ({ weatherVars, setWeatherVars, cityName, displayFahrenheit, setDisplayFahrenheit}) => {
+const WeightingForm: React.FC<WeightingFormProps> = ({ weatherVars, setWeatherVars, cityName}) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const newValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : parseInt(value);
@@ -57,17 +55,6 @@ const WeightingForm: React.FC<WeightingFormProps> = ({ weatherVars, setWeatherVa
               onChange={handleChange}
             />
             {weatherLabels['SHIFTED'] || 'Shift Seasons for Southern Hemisphere'}
-          </label>
-        </div>
-        <div style={{ gridColumn: '1 / -1' }}> {/* This will extend the checkbox across the full width of the form */}
-          <label>
-            
-            <input
-              type="checkbox"
-              checked={displayFahrenheit}
-              onChange={(e) => setDisplayFahrenheit(e.target.checked)}
-            />
-            {" Check to display in Fahrenheit/inches (uncheck for Celcius/millimeters)"}
           </label>
         </div>
       </form>

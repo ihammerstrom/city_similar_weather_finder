@@ -94,13 +94,24 @@ function App() {
     <>
       {similarCities?.length > 0 &&
         <>
-          <h2 style={{textAlign: 'center'}}>
+          <h2 style={{textAlign: 'center', marginTop: '30px'}}>
             Top {similarCities.length} similar cities to {selectedCity?.label}
           </h2>
+          
+          <div style={{textAlign: 'center', fontSize: '16px', color: 'grey', marginTop:'40px', marginBottom:'10px' }}>
+          <label>
+            <input
+              type="checkbox"
+              checked={displayFahrenheit}
+              onChange={(e) => setDisplayFahrenheit(e.target.checked)}
+            />
+            {" Check to display in Fahrenheit/inches (uncheck for Celcius/millimeters)"}
+          </label>
+          </div>
           <CityWeatherGraph data={similarCities.find(city => city.geoname_id == mapCityName?.value)!} backgroundData={similarCities[0]} shifting={weatherOptions.SHIFTED} displayFahrenheit={displayFahrenheit}/>
           <h3 style={{textAlign: 'center', margin: '10px', marginLeft: "5%", marginRight: "5%"}}>Click a city below to compare it above with the reference city:</h3>
-          <div style={{textAlign: 'center', fontSize: '16px', color: 'grey', marginTop:'10px', marginBottom:'16px' }}> Cities are ranked by similarity from 1 to {similarCities.length} </div>
 
+          <div style={{textAlign: 'center', fontSize: '16px', color: 'grey', marginTop:'10px', marginBottom:'16px' }}> Cities are ranked by similarity from 1 to {similarCities.length} </div>
           <MapView key={key} locations={similarCities} onCityClick={handleMapCityClick} />
         </>
       }
@@ -113,8 +124,6 @@ function App() {
                 weatherVars={weatherOptions} 
                 setWeatherVars={setWeatherOptions} 
                 cityName={selectedCity}
-                displayFahrenheit={displayFahrenheit}
-                setDisplayFahrenheit={setDisplayFahrenheit}
               />
             </div>
           </div>

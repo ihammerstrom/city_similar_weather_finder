@@ -49,7 +49,7 @@ function App() {
           // Otherwise, sort normally by similarity
           return b.similarity - a.similarity;
         }));
-        
+
         setMapCityName(citySelected);
       }else{
         console.log("selected city is null, not fetching")

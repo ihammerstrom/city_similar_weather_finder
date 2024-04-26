@@ -25,7 +25,6 @@ function App() {
 
   const fetchCityData = async (citySelected: IOption | undefined) => {
     try {
-      console.log('selectedCity is:', citySelected)
       if (citySelected != null){
         const params = {
           'geoname_id': citySelected.value,
@@ -41,7 +40,6 @@ function App() {
         const response = await fetch(`${API_URL}/get_similar_cities?${queryString}`);
         const data = await response.json();
         // setIsLoading(false)
-        console.log(`Response from sending city ${citySelected}:`, data);
 
         // set the similar cities response, sorting on similarity
         setSimilarCities(data['cities'].sort((a: { similarity: number; }, b: { similarity: number; }) => b.similarity - a.similarity))
@@ -76,12 +74,10 @@ function App() {
   ) => {
     // Assuming you want to update the state based on the value of the selected option
     const selectedCityName = newValue ? newValue : undefined;
-    console.log(`setting city name to ${selectedCityName}`)
     setSelectedCity(selectedCityName)
   };
   
   const handleMapCityClick = (cityName: IOption): void => {
-    console.log(`clicked on ${cityName}`)
     setMapCityName(cityName);
   };
 
@@ -96,7 +92,7 @@ function App() {
           </h2>
           <CityWeatherGraph data={similarCities.find(city => city.geoname_id == mapCityName?.value)!} backgroundData={similarCities[0]} shifting={weatherOptions.SHIFTED}/>
           <h3 style={{textAlign: 'center', margin: '10px', marginLeft: "5%", marginRight: "5%"}}>Click a city below to compare it above with the reference city:</h3>
-          <div style={{textAlign: 'center', fontSize: '13px', color: 'grey', marginTop:'10px', marginBottom:'10px' }}> Cities are ranked by similarity from 1 to {similarCities.length} </div>
+          <div style={{textAlign: 'center', fontSize: '16px', color: 'grey', marginTop:'10px', marginBottom:'16px' }}> Cities are ranked by similarity from 1 to {similarCities.length} </div>
 
           <MapView key={key} locations={similarCities} onCityClick={handleMapCityClick} />
         </>

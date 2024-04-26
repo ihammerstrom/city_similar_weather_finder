@@ -41,8 +41,16 @@ function App() {
         const data = await response.json();
 
         // set the similar cities response, sorting on similarity
-        setSimilarCities(data['cities'].sort((a: { similarity: number; }, b: { similarity: number; }) => b.similarity - a.similarity))
-        setMapCityName(citySelected)
+        setSimilarCities(data['cities'].sort((a: CityWeatherData, b: CityWeatherData) => {
+          // Check if 'a' is the citySelected
+          if (a.name === citySelected.label) return -1;
+          // Check if 'b' is the citySelected
+          if (b.name === citySelected.label) return 1;
+          // Otherwise, sort normally by similarity
+          return b.similarity - a.similarity;
+        }));
+        
+        setMapCityName(citySelected);
       }else{
         console.log("selected city is null, not fetching")
       }

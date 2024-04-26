@@ -15,4 +15,4 @@ ihammerstrom@icloud.com
 
 Backend in Python + Flask.
 
-Frontent with React + Typescript.
+Frontent with React + TypeScript.

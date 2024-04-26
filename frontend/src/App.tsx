@@ -22,6 +22,7 @@ function App() {
     SHIFTED: true,
   });
   const [key, setKey] = useState(0); // use to force map rerender
+  const [displayFahrenheit, setDisplayFahrenheit] = useState<boolean>(true);
 
   const fetchCityData = async (citySelected: IOption | undefined) => {
     try {
@@ -36,10 +37,8 @@ function App() {
             .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
             .join('&');
 
-        // setIsLoading(true)
         const response = await fetch(`${API_URL}/get_similar_cities?${queryString}`);
         const data = await response.json();
-        // setIsLoading(false)
 
         // set the similar cities response, sorting on similarity
         setSimilarCities(data['cities'].sort((a: { similarity: number; }, b: { similarity: number; }) => b.similarity - a.similarity))
@@ -90,7 +89,7 @@ function App() {
           <h2 style={{textAlign: 'center'}}>
             Top {similarCities.length} similar cities to {selectedCity?.label}
           </h2>
-          <CityWeatherGraph data={similarCities.find(city => city.geoname_id == mapCityName?.value)!} backgroundData={similarCities[0]} shifting={weatherOptions.SHIFTED}/>
+          <CityWeatherGraph data={similarCities.find(city => city.geoname_id == mapCityName?.value)!} backgroundData={similarCities[0]} shifting={weatherOptions.SHIFTED} displayFahrenheit={displayFahrenheit}/>
           <h3 style={{textAlign: 'center', margin: '10px', marginLeft: "5%", marginRight: "5%"}}>Click a city below to compare it above with the reference city:</h3>
           <div style={{textAlign: 'center', fontSize: '16px', color: 'grey', marginTop:'10px', marginBottom:'16px' }}> Cities are ranked by similarity from 1 to {similarCities.length} </div>
 
@@ -106,6 +105,8 @@ function App() {
                 weatherVars={weatherOptions} 
                 setWeatherVars={setWeatherOptions} 
                 cityName={selectedCity}
+                displayFahrenheit={displayFahrenheit}
+                setDisplayFahrenheit={setDisplayFahrenheit}
               />
             </div>
           </div>

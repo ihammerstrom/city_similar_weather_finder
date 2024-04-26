@@ -9,6 +9,7 @@ interface CityWeatherGraphProps {
   data: CityWeatherData;
   backgroundData: CityWeatherData;
   shifting: boolean;
+  displayFahrenheit: boolean;
 }
 
 function adjustMonth(value: string | number): number {
@@ -31,88 +32,104 @@ function rotateArraySixIfSouthernHemisphere<T>(array: T[], southernHem: string):
   }
 }
 
+function convertCelsiusToFahrenheit(tempsCelsius: number[]): number[] {
+  return tempsCelsius.map(temp => (temp * 9 / 5) + 32);
+}
 
-function processCity(city: CityWeatherData): CityWeatherData {
-  const city_copy = structuredClone(city);
-  city_copy.PRCP = rotateArraySixIfSouthernHemisphere(city_copy.TMAX, city_copy.hemisphere)
-  city_copy.TAVG = rotateArraySixIfSouthernHemisphere(city_copy.TAVG, city_copy.hemisphere)
-  city_copy.TMAX = rotateArraySixIfSouthernHemisphere(city_copy.TMAX, city_copy.hemisphere)
-  city_copy.TMIN = rotateArraySixIfSouthernHemisphere(city_copy.TMIN, city_copy.hemisphere)
-  return city_copy
+function convertMillimetersToInches(mmArray: number[]): number[] {
+  return mmArray.map(mm => mm * 0.0393701);
+}
+
+function shiftCity(city: CityWeatherData): void {
+  city.PRCP = rotateArraySixIfSouthernHemisphere(city.PRCP, city.hemisphere)
+  city.TAVG = rotateArraySixIfSouthernHemisphere(city.TAVG, city.hemisphere)
+  city.TMAX = rotateArraySixIfSouthernHemisphere(city.TMAX, city.hemisphere)
+  city.TMIN = rotateArraySixIfSouthernHemisphere(city.TMIN, city.hemisphere)
+}
+
+function convertCityEnglishSystem(city: CityWeatherData): void {
+  city.PRCP = convertMillimetersToInches(city.PRCP)
+  city.TAVG = convertCelsiusToFahrenheit(city.TAVG)
+  city.TMAX = convertCelsiusToFahrenheit(city.TMAX)
+  city.TMIN = convertCelsiusToFahrenheit(city.TMIN)
 }
 
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
-const CityWeatherGraph: React.FC<CityWeatherGraphProps> = ({ data, backgroundData, shifting }) => {
+const CityWeatherGraph: React.FC<CityWeatherGraphProps> = ({ data, backgroundData, shifting, displayFahrenheit}) => {
   const [myCity, setmyCity] = useState<CityWeatherData>();
   const [myBackgroundCity, setmyBackgroundCity] = useState<CityWeatherData>();
 
   useEffect(() => {
-    if(shifting){
-      setmyCity(processCity(data))
-      setmyBackgroundCity(processCity(backgroundData))
-    } else { 
-      setmyCity(data)
-      setmyBackgroundCity(backgroundData)
+    const city_copy = structuredClone(data);
+    const background_city_copy = structuredClone(backgroundData)
+    if (shifting) {
+      shiftCity(city_copy)
+      shiftCity(background_city_copy)
     }
-
-  }, [data, backgroundData, shifting]);
+    if (displayFahrenheit) {
+      convertCityEnglishSystem(city_copy)
+      convertCityEnglishSystem(background_city_copy)
+    }
+    setmyCity(city_copy)
+    setmyBackgroundCity(background_city_copy)
+  }, [data, backgroundData, shifting, displayFahrenheit]);
 
   // Define the chart data
   const chartData = {
     labels: months,
     datasets: [
       {
-        label: 'Average Temperature (°C)',
+        label: `Average Temperature (${displayFahrenheit ? '°F' : '°C'})`,
         data: myCity?.TAVG,
         borderColor: 'rgb(255, 99, 132)', // Red
         backgroundColor: 'rgba(255, 99, 132, 0.15)',
         yAxisID: 'y', // Assign to the first Y axis
       },
       {
-        label: 'Precipitation (mm)',
+        label: `Precipitation (${displayFahrenheit ? 'in' : 'mm'})`,
         data: myCity?.PRCP,
         borderColor: 'rgb(54, 162, 235)', // Blue
         backgroundColor: 'rgba(54, 162, 235, 0.15)',
         yAxisID: 'y1', // Assign to the second Y axis
       },
       {
-        label: 'Max Temperature (°C)',
+        label: `Max Temperature (${displayFahrenheit ? '°F' : '°C'})`,
         data: myCity?.TMAX,
         borderColor: 'rgb(255, 205, 86)', // Yellow
         backgroundColor: 'rgba(255, 205, 86, 0.15)',
         yAxisID: 'y', // Assign to the first Y axis
       },
       {
-        label: 'Min Temperature (°C)',
+        label: `Min Temperature (${displayFahrenheit ? '°F' : '°C'})`,
         data: myCity?.TMIN,
         borderColor: 'rgb(153, 102, 255)', // Purple
         backgroundColor: 'rgba(153, 102, 255, 0.15)',
         yAxisID: 'y', // Assign to the first Y axis
       },
       {
-        label: '(origin) Average Temperature (°C)',
+        label: `(origin) Average Temperature (${displayFahrenheit ? '°F' : '°C'})`,
         data: myBackgroundCity?.TAVG,
         borderColor: 'rgb(255, 99, 132, 0.15)', // Red
         backgroundColor: 'rgba(255, 99, 132, 0.4)',
         yAxisID: 'y', // Assign to the first Y axis
       },
       {
-        label: '(origin) Precipitation (mm)',
+        label: `(origin) Precipitation (${displayFahrenheit ? 'in' : 'mm'})`,
         data: myBackgroundCity?.PRCP,
         borderColor: 'rgb(54, 162, 235, 0.15)', // Blue
         backgroundColor: 'rgba(54, 162, 235, 0.4)',
         yAxisID: 'y1', // Assign to the second Y axis
       },
       {
-        label: '(origin) Max Temperature (°C)',
+        label: `(origin) Max Temperature (${displayFahrenheit ? '°F' : '°C'})`,
         data: myBackgroundCity?.TMAX,
         borderColor: 'rgb(255, 205, 86, 0.15)', // Yellow
         backgroundColor: 'rgba(255, 205, 86, 0.4)',
         yAxisID: 'y', // Assign to the first Y axis
       },
       {
-        label: '(origin) Min Temperature (°C)',
+        label: `(origin) Min Temperature (${displayFahrenheit ? '°F' : '°C'})`,
         data: myCity?.TMIN,
         borderColor: 'rgb(153, 102, 255, 0.15)', // Purple
         backgroundColor: 'rgba(153, 102, 255, 0.4)',

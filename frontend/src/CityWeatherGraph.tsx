@@ -40,6 +40,10 @@ function convertMillimetersToInches(mmArray: number[]): number[] {
   return mmArray.map(mm => mm * 0.0393701);
 }
 
+function convertInchesToMillimeters(mmArray: number[]): number[] {
+  return mmArray.map(mm => mm / 0.0393701);
+}
+
 function shiftCity(city: CityWeatherData): void {
   city.PRCP = rotateArraySixIfSouthernHemisphere(city.PRCP, city.hemisphere)
   city.TAVG = rotateArraySixIfSouthernHemisphere(city.TAVG, city.hemisphere)
@@ -48,10 +52,13 @@ function shiftCity(city: CityWeatherData): void {
 }
 
 function convertCityEnglishSystem(city: CityWeatherData): void {
-  city.PRCP = convertMillimetersToInches(city.PRCP)
   city.TAVG = convertCelsiusToFahrenheit(city.TAVG)
   city.TMAX = convertCelsiusToFahrenheit(city.TMAX)
   city.TMIN = convertCelsiusToFahrenheit(city.TMIN)
+}
+
+function convertCityMetricSystem(city: CityWeatherData): void {
+  city.PRCP = convertInchesToMillimeters(city.PRCP)
 }
 
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
@@ -70,6 +77,9 @@ const CityWeatherGraph: React.FC<CityWeatherGraphProps> = ({ data, backgroundDat
     if (displayFahrenheit) {
       convertCityEnglishSystem(city_copy)
       convertCityEnglishSystem(background_city_copy)
+    } else {
+      city_copy.PRCP = convertInchesToMillimeters(city_copy.PRCP)
+      background_city_copy.PRCP = convertInchesToMillimeters(background_city_copy.PRCP)
     }
     setmyCity(city_copy)
     setmyBackgroundCity(background_city_copy)

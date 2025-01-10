@@ -16,6 +16,6 @@ Backend in Python + Flask.
 
 Frontent with React + TypeScript.
 
-An experiment in iterative code generation with ChatGPT.
+**An experiment in iterative code generation with ChatGPT.**
 
 
